@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Dinner Time is a family meal planning web application with weekly recipe planning, family ratings, dashboard analytics, and shopping list generation. It's a static web app (no backend) using vanilla JavaScript with Docker containerization for deployment.
+Dinner Time is a family meal planning web application with weekly recipe planning, family ratings, dashboard analytics, and shopping list generation. It uses a Node.js Express backend for API persistence with a vanilla JavaScript frontend and Docker containerization for deployment.
 
 ## Development Commands
 
@@ -16,7 +16,7 @@ cd frontend/public && python3 -m http.server 8000
 cd docker && docker-compose up --build
 
 # Validate recipe JSON
-python3 -m json.tool < data/recipes/master_recipes.json
+python3 -m json.tool < data/master_recipes.json
 
 # Process uploaded recipes
 bash scripts/process_recipes.sh
@@ -27,8 +27,9 @@ There is no build step, test suite, or linter configured. The app runs directly 
 ## Architecture
 
 ### Data Layer
-- **Master recipe database:** `data/recipes/master_recipes.json` - single source of truth for all recipes
-- **Client storage:** Browser localStorage stores `dinnerRatings` (rating objects) and `weeklyPlans` (plan objects)
+- **Master recipe database:** `data/master_recipes.json` - single source of truth for all recipes
+- **Server storage:** `data/ratings.json` and `data/weekly_plans.json` for persistent API storage
+- **Client fallback:** Browser localStorage used if server unavailable
 - **Uploads:** `data/uploads/` for recipe images/PDFs awaiting processing
 
 ### Frontend (`frontend/public/`)
@@ -42,12 +43,12 @@ There is no build step, test suite, or linter configured. The app runs directly 
 - Recipe IDs use both numeric (`recipeId: 1`) and string (`id: "recipe-kebab-case"`) formats
 - Dates use ISO 8601 week format: `YYYY-Www` (e.g., `2026-W05`)
 - Shopping list categorization uses keyword matching in `planner.js`
-- All data persistence is per-browser (not synced across devices)
+- Data persisted server-side via Node.js API with localStorage fallback
 
 ### Docker (`docker/`)
-- Nginx Alpine-based container on port 8080
+- Node.js Alpine-based container on port 3000
 - Volume mounts `data/` for persistence
-- Security headers and caching configured in `nginx.conf`
+- Entrypoint script (`docker-entrypoint.sh`) initializes config files on first run
 
 ## Recipe Format
 
@@ -69,7 +70,7 @@ There is no build step, test suite, or linter configured. The app runs directly 
 }
 ```
 
-Add new recipes directly to `data/recipes/master_recipes.json` - they appear immediately in the app.
+Add new recipes directly to `data/master_recipes.json` - they appear immediately in the app.
 
 ## Family Members
 

@@ -23,21 +23,18 @@ dinner_time/
 │   └── package.json             # Node.js dependencies
 │
 ├── data/                         # Data layer (persisted by server)
-│   ├── recipes/
-│   │   ├── master_recipes.json  # Master recipe database
-│   │   └── archives/            # Historical recipe markdown files
-│   │       ├── week1/
-│   │       └── week2/
+│   ├── master_recipes.json      # Master recipe database
 │   ├── weekly_plans.json        # Weekly meal plans by ISO week
 │   ├── ratings.json             # Recipe ratings from family members
-│   └── uploads/                 # Upload repository
+│   └── uploads/                 # Upload repository (created dynamically)
 │       ├── images/              # Uploaded recipe images
 │       ├── pdfs/                # Uploaded recipe PDFs
 │       └── processed/           # Processed files moved here
 │
 ├── docker/                       # Docker configuration
 │   ├── Dockerfile               # Node.js Alpine container
-│   └── docker-compose.yml       # Service orchestration
+│   ├── docker-compose.yml       # Service orchestration
+│   └── docker-entrypoint.sh     # Initializes config files on first run
 │
 ├── scripts/                      # Automation scripts
 │   └── process_recipes.sh       # Batch processing script
@@ -163,7 +160,7 @@ docker-compose up --build
 
 ### Server-Side Storage (Node.js Backend)
 The application uses a Node.js Express server for persistent data storage:
-- **Recipes**: `data/recipes/master_recipes.json`
+- **Recipes**: `data/master_recipes.json`
 - **Weekly Plans**: `data/weekly_plans.json` - Saved via API
 - **Ratings**: `data/ratings.json` - Saved via API
 - **Uploads**: `data/uploads/images/` and `data/uploads/pdfs/`
@@ -208,7 +205,7 @@ All data includes:
    "Check the upload folder for new files"
    ```
    Claude will read the image/PDF and extract the recipe data
-6. Recipe is added to `data/recipes/master_recipes.json`
+6. Recipe is added to `data/master_recipes.json`
 7. Processed files are moved to `data/uploads/processed/`
 8. Recipe automatically appears in the planner!
 
