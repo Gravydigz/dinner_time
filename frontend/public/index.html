@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dinner Time - Recipe Ratings</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dinner Time Recipe Ratings</h1>
+            <p>Rate our dinner recipes</p>
+            <a href="upload.html" style="display: inline-block; margin-top: 10px; color: #667eea; text-decoration: none; font-weight: 600;">📤 Upload New Recipes</a>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" onclick="showTab('planner')">Weekly Planner</button>
+            <button class="tab-btn" onclick="showTab('history')">Plan History</button>
+            <button class="tab-btn" onclick="showTab('rating')">Rate a Recipe</button>
+            <button class="tab-btn" onclick="showTab('dashboard')">Dashboard</button>
+        </nav>
+
+        <!-- Weekly Planner -->
+        <div id="planner-tab" class="tab-content active">
+            <div class="form-card">
+                <h2>Plan Your Week</h2>
+                <p class="subtitle">Select 3-4 recipes for the week</p>
+
+                <div id="recipe-selector">
+                    <div class="recipe-list" id="master-recipe-list"></div>
+                </div>
+
+                <div class="selected-recipes-section">
+                    <h3>Selected Recipes (<span id="selected-count">0</span>)</h3>
+                    <div id="selected-recipes-list"></div>
+                </div>
+
+                <button class="submit-btn" onclick="generateShoppingList()" id="generate-shopping-btn" disabled>
+                    Generate Shopping List
+                </button>
+            </div>
+
+            <div class="shopping-list-card" id="shopping-list-card" style="display: none;">
+                <h2>Shopping List</h2>
+                <button class="print-btn" onclick="window.print()">Print List</button>
+                <div id="shopping-list-content"></div>
+            </div>
+        </div>
+
+        <!-- Plan History -->
+        <div id="history-tab" class="tab-content">
+            <div class="form-card">
+                <h2>Weekly Plan History</h2>
+                <p class="subtitle">View your past meal plans by ISO week</p>
+                <div id="plan-history-list"></div>
+            </div>
+        </div>
+
+        <!-- Rating Form -->
+        <div id="rating-tab" class="tab-content">
+            <div class="form-card">
+                <h2>Submit Your Rating</h2>
+
+                <div class="form-group">
+                    <label for="user-select">Your Name:</label>
+                    <select id="user-select" required>
+                        <option value="">-- Select Your Name --</option>
+                        <option value="Travis">Travis</option>
+                        <option value="Heidi">Heidi</option>
+                        <option value="Stella">Stella</option>
+                        <option value="Dylan">Dylan</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="recipe-select">Recipe:</label>
+                    <select id="recipe-select" required>
+                        <option value="">-- Select a Recipe --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Rating (1-5):</label>
+                    <div class="rating-buttons">
+                        <button type="button" class="rating-btn" data-rating="1">1</button>
+                        <button type="button" class="rating-btn" data-rating="2">2</button>
+                        <button type="button" class="rating-btn" data-rating="3">3</button>
+                        <button type="button" class="rating-btn" data-rating="4">4</button>
+                        <button type="button" class="rating-btn" data-rating="5">5 ⭐</button>
+                    </div>
+                    <p class="rating-description">1 = Poor, 5 = Great</p>
+                </div>
+
+                <button class="submit-btn" onclick="submitRating()">Submit Rating</button>
+
+                <div class="success-message" id="success-message">
+                    Rating submitted successfully!
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard-tab" class="tab-content">
+            <div class="dashboard-card">
+                <h2>Overall Favorite Recipes</h2>
+                <div id="overall-favorites"></div>
+            </div>
+
+            <div class="dashboard-card">
+                <h2>Favorites by Person</h2>
+                <div class="person-tabs">
+                    <button class="person-btn active" onclick="showPersonStats('Travis')">Travis</button>
+                    <button class="person-btn" onclick="showPersonStats('Heidi')">Heidi</button>
+                    <button class="person-btn" onclick="showPersonStats('Stella')">Stella</button>
+                    <button class="person-btn" onclick="showPersonStats('Dylan')">Dylan</button>
+                </div>
+                <div id="person-favorites"></div>
+            </div>
+
+            <div class="dashboard-card">
+                <h2>All Ratings History</h2>
+                <div id="ratings-history"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/planner.js"></script>
+    <script src="assets/js/script.js"></script>
+</body>
+</html>

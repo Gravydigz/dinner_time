@@ -1,0 +1,53 @@
+# Git
+.git/
+.gitignore
+
+# Documentation (not needed in container)
+*.md
+!README.md
+docs/
+
+# Docker files themselves
+docker/
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# Development files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# User uploads (mount as volume instead)
+data/uploads/images/*
+data/uploads/pdfs/*
+data/uploads/processed/*
+
+# Keep structure
+!data/uploads/images/.gitkeep
+!data/uploads/pdfs/.gitkeep
+!data/uploads/processed/.gitkeep
+
+# Logs and temp files
+*.log
+logs/
+tmp/
+temp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Old/backup files
+web/
+recipes/
+uploads/
+*.backup
+*.bak
+
+# Scripts (can be mounted if needed)
+scripts/
+
+# Testing
+tests/

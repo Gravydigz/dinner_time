@@ -1,0 +1,231 @@
+{
+  "recipes": [
+    {
+      "recipeId": 1,
+      "id": "bourbon-glazed-steak-tips",
+      "name": "Bourbon-Glazed Steak Tips",
+      "source": "Beef Loving Texans",
+      "author": "Jess Pryles",
+      "url": "https://beeflovingtexans.com/recipe/bourbon-glazed-steak-tips/",
+      "prepTime": 240,
+      "cookTime": 15,
+      "servings": 6,
+      "category": "Beef",
+      "ingredients": [
+        { "item": "Top Blade Roast, Flat Iron, or Sirloin", "amount": "3", "unit": "lb" },
+        { "item": "Worcestershire sauce", "amount": "1/4", "unit": "cup" },
+        { "item": "soy sauce", "amount": "1/4", "unit": "cup" },
+        { "item": "balsamic vinegar", "amount": "2", "unit": "tbsp" },
+        { "item": "honey", "amount": "1/4", "unit": "cup", "additional": "plus 2 tbsp" },
+        { "item": "bourbon", "amount": "1/2", "unit": "cup", "additional": "plus 2 tbsp" },
+        { "item": "spray oil", "amount": "1", "unit": "spray" },
+        { "item": "salt", "amount": "1/2", "unit": "tsp" }
+      ],
+      "instructions": [
+        "Cube beef into 1-inch pieces. Remove and discard membranes if using Top Blade Roast",
+        "Combine Worcestershire, soy sauce, vinegar, 1/4 cup honey, and 1/2 cup bourbon. Marinate beef overnight or minimum 4 hours",
+        "Heat cast iron skillet to medium-high; lightly oil surface",
+        "Drain excess marinade from beef and discard",
+        "Cook steak tips 5-7 minutes until browning develops",
+        "Mix remaining bourbon and honey; pour over tips to glaze. Cook until caramelized to rich brown. Taste and adjust salt if needed",
+        "Remove from heat; cool 2-3 minutes before serving"
+      ]
+    },
+    {
+      "recipeId": 2,
+      "id": "chicken-stir-fry",
+      "name": "Monday Chicken Stir Fry",
+      "source": "Custom",
+      "url": "",
+      "prepTime": 15,
+      "cookTime": 15,
+      "servings": 4,
+      "category": "Chicken",
+      "ingredients": [
+        { "item": "chicken breast, sliced", "amount": "1", "unit": "lb" },
+        { "item": "mixed vegetables (bell peppers, broccoli, carrots)", "amount": "2", "unit": "cups" },
+        { "item": "garlic, minced", "amount": "3", "unit": "cloves" },
+        { "item": "soy sauce", "amount": "2", "unit": "tbsp" },
+        { "item": "sesame oil", "amount": "1", "unit": "tbsp" },
+        { "item": "cornstarch", "amount": "1", "unit": "tbsp" },
+        { "item": "cooked rice", "amount": "2", "unit": "cups" }
+      ],
+      "instructions": [
+        "Heat sesame oil in a large pan or wok over high heat",
+        "Add chicken and cook until browned, about 5-6 minutes",
+        "Add garlic and vegetables, stir fry for 4-5 minutes",
+        "Mix soy sauce with cornstarch and add to pan",
+        "Cook for 2 more minutes until sauce thickens",
+        "Serve over rice"
+      ]
+    },
+    {
+      "recipeId": 3,
+      "id": "pasta-marinara",
+      "name": "Wednesday Pasta Marinara with Italian Sausage",
+      "source": "Custom",
+      "url": "",
+      "prepTime": 10,
+      "cookTime": 20,
+      "servings": 6,
+      "category": "Pasta",
+      "ingredients": [
+        { "item": "pasta (penne or rigatoni)", "amount": "1", "unit": "lb" },
+        { "item": "Italian sausage", "amount": "1", "unit": "lb" },
+        { "item": "marinara sauce", "amount": "24", "unit": "oz" },
+        { "item": "onion, diced", "amount": "1", "unit": "whole" },
+        { "item": "garlic, minced", "amount": "3", "unit": "cloves" },
+        { "item": "Italian seasoning", "amount": "1", "unit": "tsp" },
+        { "item": "Parmesan cheese", "amount": "1/2", "unit": "cup" },
+        { "item": "fresh basil", "amount": "1", "unit": "handful" }
+      ],
+      "instructions": [
+        "Cook pasta according to package directions",
+        "In a large pan, brown the sausage and break into pieces",
+        "Add onion and garlic, cook until softened",
+        "Add marinara sauce and Italian seasoning",
+        "Simmer for 10 minutes",
+        "Toss with cooked pasta",
+        "Top with Parmesan and fresh basil"
+      ]
+    },
+    {
+      "recipeId": 4,
+      "id": "tuscan-sausage-pasta",
+      "name": "Tuscan Sausage Pasta",
+      "source": "Salt & Lavender",
+      "url": "https://www.saltandlavender.com/tuscan-sausage-pasta/",
+      "prepTime": 10,
+      "cookTime": 20,
+      "servings": 4,
+      "category": "Pasta",
+      "ingredients": [
+        { "item": "uncooked pasta (fettuccine)", "amount": "8", "unit": "oz" },
+        { "item": "Italian sausages", "amount": "11", "unit": "oz" },
+        { "item": "garlic, minced", "amount": "3", "unit": "cloves" },
+        { "item": "chicken broth or dry white wine", "amount": "1/2", "unit": "cup" },
+        { "item": "Dijon mustard", "amount": "1/2", "unit": "tsp" },
+        { "item": "flour", "amount": "1", "unit": "tsp" },
+        { "item": "lemon juice", "amount": "1", "unit": "tsp" },
+        { "item": "sun-dried tomatoes", "amount": "1/4", "unit": "cup" },
+        { "item": "heavy/whipping cream", "amount": "1", "unit": "cup" },
+        { "item": "fresh baby spinach", "amount": "1.5", "unit": "cups" },
+        { "item": "fresh basil", "amount": "1", "unit": "handful" },
+        { "item": "salt and pepper", "amount": "to taste", "unit": "" },
+        { "item": "Parmesan cheese", "amount": "to taste", "unit": "" }
+      ],
+      "instructions": [
+        "Boil salted water and cook pasta al dente per package directions",
+        "Remove sausages from casings and crumble into a skillet. Brown over medium-high heat for 5 minutes",
+        "Remove sausage; discard excess fat if needed",
+        "Add garlic, broth, mustard, flour, and lemon juice to the pan. Stir well, scraping up browned bits",
+        "Add sun-dried tomatoes and cream. Cook 2-3 minutes",
+        "Return sausage to pan and cook until sauce thickens",
+        "Stir in basil and spinach until wilted. Season with salt and pepper",
+        "Drain pasta and toss with sauce. Serve with parmesan"
+      ]
+    },
+    {
+      "recipeId": 5,
+      "id": "one-pot-ravioli-lasagna",
+      "name": "One Pot Skillet Ravioli Lasagna",
+      "source": "Aberdeen's Kitchen",
+      "url": "https://www.aberdeenskitchen.com/2017/12/one-pot-skillet-ravioli-lasagna/",
+      "prepTime": 5,
+      "cookTime": 20,
+      "servings": 4,
+      "category": "Pasta",
+      "ingredients": [
+        { "item": "refrigerated ravioli (wild mushroom + cheesy parmesan)", "amount": "18", "unit": "oz" },
+        { "item": "diced tomato, drained", "amount": "14", "unit": "oz" },
+        { "item": "tomato sauce", "amount": "14", "unit": "oz" },
+        { "item": "dried basil", "amount": "1.5", "unit": "tsp" },
+        { "item": "dried oregano", "amount": "1.5", "unit": "tsp" },
+        { "item": "chicken stock", "amount": "1", "unit": "cup" },
+        { "item": "baby spinach and kale, roughly chopped", "amount": "3", "unit": "cups" },
+        { "item": "part skim ricotta cheese", "amount": "4", "unit": "oz" },
+        { "item": "mozzarella cheese", "amount": "1/2", "unit": "cup" },
+        { "item": "salt and pepper", "amount": "to taste", "unit": "" },
+        { "item": "fresh basil", "amount": "1", "unit": "handful" }
+      ],
+      "instructions": [
+        "In a large oven-safe skillet, combine tomatoes, tomato sauce, basil, oregano, chicken stock, spinach, and kale. Bring to a boil",
+        "Reduce to a simmer and cook 5 minutes until greens wilt and liquid thickens",
+        "Stir in ravioli and add ricotta cheese in chunks. Return to a boil, cover, reduce heat, and simmer 7-10 minutes",
+        "Sprinkle with mozzarella cheese. Optional: broil 2-3 minutes",
+        "Let rest 2-3 minutes. Top with fresh basil"
+      ]
+    },
+    {
+      "recipeId": 6,
+      "id": "marry-me-chicken",
+      "name": "Marry Me Chicken",
+      "source": "The Modern Proper",
+      "url": "https://themodernproper.com/marry-me-chicken",
+      "prepTime": 15,
+      "cookTime": 30,
+      "servings": 4,
+      "category": "Chicken",
+      "ingredients": [
+        { "item": "boneless, skinless chicken breasts", "amount": "4", "unit": "pieces" },
+        { "item": "kosher salt", "amount": "1.5", "unit": "tsp" },
+        { "item": "extra-virgin olive oil", "amount": "2", "unit": "tbsp" },
+        { "item": "garlic cloves, minced", "amount": "3", "unit": "cloves" },
+        { "item": "heavy cream", "amount": "1", "unit": "cup" },
+        { "item": "chicken stock", "amount": "1/2", "unit": "cup" },
+        { "item": "chicken bouillon", "amount": "1", "unit": "tsp" },
+        { "item": "Parmesan cheese, freshly grated", "amount": "1/2", "unit": "cup" },
+        { "item": "sun-dried tomatoes, drained and chopped", "amount": "7", "unit": "oz" },
+        { "item": "Italian seasoning", "amount": "1", "unit": "tsp" },
+        { "item": "black pepper", "amount": "1/2", "unit": "tsp" },
+        { "item": "red pepper flakes", "amount": "1/2", "unit": "tsp" },
+        { "item": "fresh basil, sliced", "amount": "1/4", "unit": "cup" }
+      ],
+      "instructions": [
+        "Pat chicken dry and season with 1 tsp salt. Heat oil in a large skillet over medium-high heat. Cook chicken 5 minutes per side. Transfer to a plate",
+        "Reduce heat to medium. Add garlic and cook 30 seconds. Stir in cream, stock, bouillon, 1/4 cup Parmesan, sun-dried tomatoes, Italian seasoning, black pepper, red pepper flakes, and remaining salt. Whisk until smooth",
+        "Return chicken to skillet. Simmer over medium-low heat until internal temp reaches 165°F (8-10 minutes)",
+        "Top with remaining Parmesan and fresh basil. Serve over pasta or potatoes"
+      ]
+    },
+    {
+      "recipeId": 7,
+      "id": "marry-me-chicken-tortellini",
+      "name": "Marry Me Chicken Tortellini",
+      "source": "Flavorful Life",
+      "url": "https://flavorfulife.com/marry-me-chicken-tortellini/",
+      "prepTime": 10,
+      "cookTime": 15,
+      "servings": 6,
+      "category": "Pasta",
+      "ingredients": [
+        { "item": "chicken breast, cut into 1-inch chunks", "amount": "1", "unit": "lb" },
+        { "item": "kosher salt", "amount": "1/2", "unit": "tsp" },
+        { "item": "black pepper", "amount": "1/2", "unit": "tsp" },
+        { "item": "Italian seasoning", "amount": "1.5", "unit": "tsp" },
+        { "item": "smoked paprika", "amount": "1", "unit": "tsp" },
+        { "item": "all-purpose flour", "amount": "2", "unit": "tbsp" },
+        { "item": "butter", "amount": "1", "unit": "tbsp" },
+        { "item": "extra-virgin olive oil", "amount": "2", "unit": "tbsp" },
+        { "item": "shallot, minced", "amount": "1", "unit": "whole" },
+        { "item": "garlic, minced", "amount": "4", "unit": "cloves" },
+        { "item": "red pepper flakes", "amount": "1/4", "unit": "tsp" },
+        { "item": "sun-dried tomatoes in oil, finely chopped", "amount": "1/4", "unit": "cup" },
+        { "item": "tomato paste", "amount": "1/4", "unit": "cup" },
+        { "item": "chicken broth", "amount": "2", "unit": "cups" },
+        { "item": "cheese tortellini", "amount": "1", "unit": "lb" },
+        { "item": "heavy cream", "amount": "1", "unit": "cup" },
+        { "item": "spinach, roughly chopped", "amount": "3", "unit": "cups" },
+        { "item": "parmesan cheese, freshly grated", "amount": "1/2", "unit": "cup" },
+        { "item": "fresh basil", "amount": "1", "unit": "handful" }
+      ],
+      "instructions": [
+        "Season chicken with salt, pepper, Italian seasoning, and smoked paprika. Toss with flour",
+        "Heat butter and 1 tbsp olive oil in skillet. Cook chicken until browned and cooked through. Transfer to a plate",
+        "Add remaining olive oil, garlic, shallot, and sun-dried tomatoes. Sauté 3 minutes. Season with red pepper flakes. Stir in tomato paste and broth",
+        "Add tortellini; bring to a simmer. Cover and cook 3-4 minutes",
+        "Uncover and stir in cooked chicken, spinach, cream, and parmesan. Serve hot with fresh basil"
+      ]
+    }
+  ]
+}
