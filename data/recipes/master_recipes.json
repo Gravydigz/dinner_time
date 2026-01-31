@@ -34,7 +34,7 @@
     {
       "recipeId": 2,
       "id": "chicken-stir-fry",
-      "name": "Monday Chicken Stir Fry",
+      "name": "Chicken Stir Fry",
       "source": "Custom",
       "url": "",
       "prepTime": 15,
@@ -62,7 +62,7 @@
     {
       "recipeId": 3,
       "id": "pasta-marinara",
-      "name": "Wednesday Pasta Marinara with Italian Sausage",
+      "name": "Pasta Marinara with Italian Sausage",
       "source": "Custom",
       "url": "",
       "prepTime": 10,
@@ -190,8 +190,8 @@
     },
     {
       "recipeId": 7,
-      "id": "marry-me-chicken-tortellini",
-      "name": "Marry Me Chicken Tortellini",
+      "id": "tortellini-smoked-chicken",
+      "name": "Chicken Tortellini with Smoked Chicken",
       "source": "Flavorful Life",
       "url": "https://flavorfulife.com/marry-me-chicken-tortellini/",
       "prepTime": 10,
@@ -225,6 +225,37 @@
         "Add remaining olive oil, garlic, shallot, and sun-dried tomatoes. Sauté 3 minutes. Season with red pepper flakes. Stir in tomato paste and broth",
         "Add tortellini; bring to a simmer. Cover and cook 3-4 minutes",
         "Uncover and stir in cooked chicken, spinach, cream, and parmesan. Serve hot with fresh basil"
+      ]
+    },
+    {
+      "recipeId": 8,
+      "id": "instant-pot-spicy-buffalo-chicken-chili",
+      "name": "Instant Pot Spicy Buffalo Chicken Chili",
+      "source": "Kroger",
+      "url": "https://www.kroger.com/r/instant-pot-spicy-buffalo-chicken-chili-recipe/5d7696fd9da07c5afd1262e6",
+      "prepTime": 10,
+      "cookTime": 30,
+      "servings": 4,
+      "category": "Chicken",
+      "ingredients": [
+        { "item": "boneless and skinless chicken breasts", "amount": "1", "unit": "lb" },
+        { "item": "diced tomatoes, drained", "amount": "14.5", "unit": "oz" },
+        { "item": "chicken broth", "amount": "14.5", "unit": "oz" },
+        { "item": "buffalo wing sauce", "amount": "1/4", "unit": "cup" },
+        { "item": "frozen corn kernels", "amount": "3/4", "unit": "cup" },
+        { "item": "yellow onions, chopped", "amount": "1/2", "unit": "cup" },
+        { "item": "carrots, chopped", "amount": "3/4", "unit": "cup" },
+        { "item": "garlic powder", "amount": "1/2", "unit": "tsp" },
+        { "item": "salt", "amount": "1/4", "unit": "tsp" },
+        { "item": "great northern beans, rinsed and drained", "amount": "15", "unit": "oz" },
+        { "item": "cream cheese, softened", "amount": "8", "unit": "oz" },
+        { "item": "tortilla chips", "amount": "to taste", "unit": "", "additional": "to serve" }
+      ],
+      "instructions": [
+        "In pressure cooker, combine chicken breasts, tomatoes, broth, wing sauce, corn, onions, carrots, garlic powder and salt",
+        "Cook on high pressure for 12 minutes. Allow pressure to naturally release for 10 minutes, then quick release remaining pressure",
+        "Using two forks, shred chicken. Mix in beans and cream cheese until smooth and creamy",
+        "Serve with tortilla chips, cilantro and blue cheese crumbles, if desired"
       ]
     }
   ]

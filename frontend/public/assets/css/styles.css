@@ -88,6 +88,48 @@ header p {
     text-align: center;
 }
 
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    gap: 15px;
+}
+
+.section-header h2 {
+    margin-bottom: 5px;
+    text-align: left;
+}
+
+.section-header .subtitle {
+    margin-bottom: 0;
+    text-align: left;
+}
+
+.export-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.export-btn:hover {
+    background: #764ba2;
+}
+
+.export-btn svg {
+    flex-shrink: 0;
+}
+
 .form-group {
     margin-bottom: 25px;
 }
@@ -165,9 +207,32 @@ header p {
     transition: all 0.3s ease;
 }
 
-.submit-btn:hover {
+.submit-btn:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.submit-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.submit-btn.secondary {
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+    margin-bottom: 10px;
+}
+
+.submit-btn.secondary:hover:not(:disabled) {
+    background: #f8f9fa;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+}
+
+.submit-btn.secondary:disabled {
+    background: white;
+    color: #ccc;
+    border-color: #ccc;
 }
 
 .success-message {
@@ -198,6 +263,18 @@ header p {
     margin-bottom: 20px;
     padding-bottom: 10px;
     border-bottom: 2px solid #667eea;
+}
+
+.dashboard-card .section-header {
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.dashboard-card .section-header h2 {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
 }
 
 .person-tabs {
@@ -336,10 +413,41 @@ header p {
     background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
 }
 
+.recipe-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+}
+
 .recipe-card-selectable h4 {
     color: #333;
     margin-bottom: 8px;
     font-size: 1.1rem;
+    flex: 1;
+}
+
+.recipe-card-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.view-icon-btn {
+    background: transparent;
+    border: none;
+    color: #667eea;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.view-icon-btn:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: #764ba2;
 }
 
 .recipe-card-selectable .recipe-meta {
@@ -386,6 +494,26 @@ header p {
 .selected-recipe-item .name {
     font-weight: 600;
     color: #333;
+}
+
+.selected-recipe-item .recipe-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.selected-recipe-item .view-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+
+.selected-recipe-item .view-btn:hover {
+    background: #764ba2;
 }
 
 .selected-recipe-item .remove-btn {
@@ -451,6 +579,21 @@ header p {
     padding: 8px 0;
     border-bottom: 1px solid #e9ecef;
     color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.shopping-category li .ingredient-info {
+    flex: 1;
+}
+
+.shopping-category li .ingredient-recipes {
+    color: #888;
+    font-size: 0.85rem;
+    font-style: italic;
+    text-align: right;
+    white-space: nowrap;
 }
 
 .shopping-category li:last-child {
@@ -535,22 +678,233 @@ header p {
     transform: translateY(-2px);
 }
 
+/* Recipe Modal Overlay */
+.recipe-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.recipe-modal-content {
+    background: #f8f9fa;
+    border-radius: 15px;
+    max-width: 800px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    padding: 30px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.recipe-modal-actions {
+    position: sticky;
+    top: 0;
+    float: right;
+    display: flex;
+    gap: 8px;
+    margin-top: -10px;
+    margin-right: -10px;
+    margin-bottom: -30px;
+    z-index: 10;
+}
+
+.recipe-modal-icon-btn {
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.recipe-modal-icon-btn:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+}
+
+.recipe-modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.recipe-modal-header h1 {
+    margin-bottom: 10px;
+    padding-right: 30px;
+}
+
+.recipe-modal-category {
+    display: inline-block;
+    background: white;
+    color: #667eea;
+    padding: 5px 12px;
+    border-radius: 5px;
+    font-weight: 600;
+}
+
+.recipe-modal-meta {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+    font-size: 0.95rem;
+}
+
+.recipe-modal-meta span {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 5px 12px;
+    border-radius: 5px;
+}
+
+.recipe-modal-source {
+    margin-bottom: 20px;
+    color: #666;
+}
+
+.recipe-modal-source a {
+    color: #667eea;
+}
+
+.recipe-modal-section {
+    background: white;
+    border-radius: 10px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.recipe-modal-section h2 {
+    color: #667eea;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #667eea;
+}
+
+.recipe-modal-section ul,
+.recipe-modal-section ol {
+    padding-left: 25px;
+}
+
+.recipe-modal-section li {
+    padding: 8px 0;
+    line-height: 1.5;
+}
+
+/* Shopping List Modal */
+.shopping-modal-recipes {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.shopping-modal-recipes h3 {
+    color: #667eea;
+    margin-bottom: 12px;
+}
+
+.shopping-modal-recipes ul {
+    padding-left: 25px;
+}
+
+.shopping-modal-recipes li {
+    padding: 5px 0;
+}
+
+.shopping-modal-category {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.shopping-modal-category h3 {
+    color: #667eea;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #667eea;
+}
+
+.shopping-modal-category ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.shopping-modal-category li {
+    padding: 10px 0;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.shopping-modal-category li:last-child {
+    border-bottom: none;
+}
+
+.shopping-modal-category li input[type="checkbox"] {
+    transform: scale(1.3);
+    cursor: pointer;
+}
+
+.shopping-modal-category li .ingredient-info {
+    flex: 1;
+}
+
+.shopping-modal-category li .ingredient-recipes {
+    color: #888;
+    font-size: 0.85rem;
+    font-style: italic;
+    text-align: right;
+    white-space: nowrap;
+}
+
 @media print {
     body {
         background: white;
+        padding: 0;
     }
 
     .container {
         box-shadow: none;
+        padding: 0;
     }
 
-    .tabs, .form-card, .print-btn {
+    header, .tabs, .form-card, .print-btn {
         display: none;
     }
 
     .shopping-list-card {
         background: white;
         padding: 0;
+        margin: 0;
+    }
+
+    .selected-recipes-info {
+        display: none;
+    }
+
+    .shopping-category li .ingredient-recipes {
+        color: #666;
     }
 }
 

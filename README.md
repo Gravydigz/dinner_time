@@ -1,6 +1,6 @@
 # Dinner Time - Weekly Recipe Collection & Rating System
 
-A family dinner recipe collection with an interactive web-based meal planning, rating system, and shopping list generator.
+A family dinner recipe collection with an interactive web-based meal planning, rating system, and shopping list generator. Features a Node.js backend for persistent data storage and direct file uploads.
 
 ## Project Structure
 
@@ -18,21 +18,25 @@ dinner_time/
 │               ├── script.js     # Rating & dashboard logic
 │               └── planner.js    # Weekly planner & shopping list
 │
-├── data/                         # Data layer
+├── server/                       # Node.js backend server
+│   ├── server.js                # Express API server
+│   └── package.json             # Node.js dependencies
+│
+├── data/                         # Data layer (persisted by server)
 │   ├── recipes/
-│   │   ├── master_recipes.json  # Master recipe database (7 recipes)
+│   │   ├── master_recipes.json  # Master recipe database
 │   │   └── archives/            # Historical recipe markdown files
 │   │       ├── week1/
 │   │       └── week2/
 │   ├── weekly_plans.json        # Weekly meal plans by ISO week
+│   ├── ratings.json             # Recipe ratings from family members
 │   └── uploads/                 # Upload repository
-│       ├── images/              # Upload recipe images here
-│       ├── pdfs/                # Upload recipe PDFs here
+│       ├── images/              # Uploaded recipe images
+│       ├── pdfs/                # Uploaded recipe PDFs
 │       └── processed/           # Processed files moved here
 │
 ├── docker/                       # Docker configuration
-│   ├── Dockerfile               # Nginx Alpine container
-│   ├── nginx.conf               # Web server configuration
+│   ├── Dockerfile               # Node.js Alpine container
 │   └── docker-compose.yml       # Service orchestration
 │
 ├── scripts/                      # Automation scripts
@@ -44,6 +48,7 @@ dinner_time/
 │   ├── DEPLOYMENT.md
 │   └── ARCHITECTURE.md
 │
+├── CLAUDE.md                     # AI assistant context file
 └── README.md                     # This file
 ```
 
@@ -62,16 +67,26 @@ dinner_time/
 The planner allows you to:
 - Browse all recipes from the master database
 - Select 3-4 recipes for the upcoming week
-- View recipe details including cook time and servings
+- **Current Week / Next Week tabs** for planning ahead
+- View recipe details in a modal overlay with print option
+- Print individual recipes directly from recipe cards
+- Save weekly plans to the server
 - Generate an automated shopping list
 
 ### Shopping List Generator
-Automatically creates a organized shopping list:
+Automatically creates an organized shopping list:
 - Aggregates ingredients from selected recipes
 - Combines duplicate ingredients intelligently
 - Organizes by category (Produce, Meat & Poultry, Dairy, Pantry, Spices)
-- Includes checkboxes for shopping
-- Print-friendly format
+- Opens in a modal overlay for easy viewing
+- Print directly without opening new tabs
+- Export functionality available
+
+### Recipe Viewing
+- **Modal overlays** for viewing full recipe details
+- **View icon** on each recipe card for quick access
+- **Print icon** on each recipe card for direct printing
+- Sticky close/print buttons while scrolling long recipes
 
 ### Rating System
 The web application allows family members to:
@@ -79,40 +94,52 @@ The web application allows family members to:
 - Choose a recipe from a dropdown list
 - Rate recipes on a scale of 1-5 (5 being great)
 - Submit ratings with automatic date/time tracking
+- **Ratings are persisted to the server** (not just localStorage)
 
 ### Dashboard
 - **Overall Favorites**: View all recipes ranked by average rating
 - **Favorites by Person**: See each family member's top-rated recipes
 - **Ratings History**: Complete log of all ratings with date, user, recipe, and score
+- **Export buttons** to download plans and ratings data
+
+### File Upload
+- **Direct server upload** for recipe images and PDFs
+- Drag-and-drop interface
+- Automatic file organization (images vs PDFs)
+- Delete uploaded files from the web interface
+- Files ready for processing with Claude Code
 
 ## How to Use
 
 ### Quick Start
 
-**Local Development:**
+**Local Development (with Node.js backend):**
 ```bash
-cd frontend/public
-python3 -m http.server 8000
-# Visit http://localhost:8000
+cd server
+npm install
+npm start
+# Visit http://localhost:3000
 ```
 
 **Docker (Production):**
 ```bash
 cd docker
-docker-compose up
-# Visit http://localhost:8080
+docker-compose up --build
+# Visit http://localhost:3000
 ```
 
 ### Planning Your Week
 1. Open the application in your web browser
-2. On the "Weekly Planner" tab:
+2. On the "Current Week" tab (default):
    - Browse all available recipes from the master database
    - Click on 3-4 recipes to select them for the week
+   - Use the **view icon** (eye) to see full recipe details in a modal
+   - Use the **print icon** to print individual recipes
    - Selected recipes appear in the "Selected Recipes" section
-   - Click "Save Weekly Plan" to save with ISO week date
-   - Click "Generate Shopping List"
-   - Review the organized shopping list by category
-   - Click "Print List" to print your shopping list
+   - Click "Save List" to save with ISO week date
+   - Click "Generate Shopping List" to view in modal
+   - Print the shopping list directly from the modal
+3. Use the "Next Week" tab to plan ahead for the following week
 
 ### View Plan History
 1. Click the "Plan History" tab
@@ -134,14 +161,29 @@ docker-compose up
 
 ## Data Storage
 
-### Browser Storage (Current)
-- **Ratings**: Stored in browser localStorage
-- **Weekly Plans**: Stored in browser localStorage
-- **Format**: JSON objects with timestamps
+### Server-Side Storage (Node.js Backend)
+The application uses a Node.js Express server for persistent data storage:
+- **Recipes**: `data/recipes/master_recipes.json`
+- **Weekly Plans**: `data/weekly_plans.json` - Saved via API
+- **Ratings**: `data/ratings.json` - Saved via API
+- **Uploads**: `data/uploads/images/` and `data/uploads/pdfs/`
 
-### File Storage
-- **Recipes**: `data/recipes/master_recipes.json` (7 recipes with sequential IDs)
-- **Plans**: `data/weekly_plans.json` (template for future server-side storage)
+### API Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/recipes` | Get all recipes |
+| GET | `/api/plans` | Get all weekly plans |
+| POST | `/api/plans` | Save weekly plans |
+| GET | `/api/ratings` | Get all ratings |
+| POST | `/api/ratings` | Save all ratings |
+| POST | `/api/ratings/add` | Add a single rating |
+| POST | `/api/upload` | Upload a single file |
+| POST | `/api/upload/multiple` | Upload multiple files |
+| GET | `/api/uploads` | List uploaded files |
+| DELETE | `/api/uploads/:folder/:file` | Delete uploaded file |
+
+### Fallback to localStorage
+If the server is unavailable, the frontend falls back to browser localStorage for offline functionality.
 
 ### Data Format
 All data includes:
@@ -155,18 +197,20 @@ All data includes:
 
 ### Option 1: Upload Interface (Recommended)
 
-1. Visit the upload page at `http://localhost:8000/upload.html` (or `/upload.html` in Docker)
-2. Drag and drop recipe images or PDF files
-3. Files are saved to `data/uploads/images/` or `data/uploads/pdfs/`
-4. Use Claude Code to process:
-   ```bash
-   # From project root
-   cd /Users/travisrobertson/Code/dinner_time
-   # Or run the batch script
-   bash scripts/process_recipes.sh
+1. Visit the upload page at `http://localhost:3000/upload.html`
+2. Drag and drop recipe images or PDF files (or click to browse)
+3. Files are **uploaded directly to the server**:
+   - Images → `data/uploads/images/`
+   - PDFs → `data/uploads/pdfs/`
+4. Files appear in the upload list with delete option
+5. Use Claude Code to process uploaded files:
    ```
-5. Manually add extracted recipe to `data/recipes/master_recipes.json`
-6. Recipe automatically appears in planner!
+   "Check the upload folder for new files"
+   ```
+   Claude will read the image/PDF and extract the recipe data
+6. Recipe is added to `data/recipes/master_recipes.json`
+7. Processed files are moved to `data/uploads/processed/`
+8. Recipe automatically appears in the planner!
 
 See `docs/AUTOMATION_GUIDE.md` for automation options with n8n.
 
@@ -212,33 +256,47 @@ The rating system works in all modern web browsers:
 
 ### Technology Stack
 - **Frontend**: HTML5, CSS3, Vanilla JavaScript (ES6+)
-- **Web Server**: Nginx (Alpine Linux)
-- **Data**: JSON files + browser localStorage
+- **Backend**: Node.js with Express.js
+- **File Uploads**: Multer middleware
+- **Data**: JSON files with API persistence
 - **Containerization**: Docker + Docker Compose
 - **Deployment**: Docker container on any platform
 
+### API Server
+The Node.js backend provides:
+- RESTful API for all data operations
+- Static file serving for frontend
+- File upload handling with multer
+- CORS support for development
+- 10MB file size limit for uploads
+- Automatic directory creation for uploads
+
 ### Data Flow
 1. **Master Database** (`data/recipes/master_recipes.json`) - Single source of truth with sequential recipe IDs
-2. **Weekly Planner** - Reads from master database, saves plans with ISO week dates
+2. **Weekly Planner** - Reads from API, saves plans via POST request
 3. **Plan History** - View and reload past weekly plans by ISO week
 4. **Shopping List Generator** - Aggregates and categorizes ingredients from selected recipes
-5. **Rating System** - Records ratings in browser localStorage with timestamps
+5. **Rating System** - Records ratings via API with server-side persistence
 6. **Dashboard** - Analyzes ratings to show favorites overall and by person
+7. **File Upload** - Direct upload to server via multipart form data
 
 ### Key Features
-- **Sequential Recipe IDs**: Recipes have numeric IDs (1-7) for easy database management
+- **Sequential Recipe IDs**: Recipes have numeric IDs for easy database management
 - **ISO Week Tracking**: Plans tracked by ISO 8601 week format (YYYY-Www)
-- **Portable Scripts**: All scripts use relative paths for Docker compatibility
+- **Modal Overlays**: Recipe viewing and shopping list in modal dialogs
+- **Direct Printing**: Print recipes and lists without opening new windows
+- **Planning Modes**: Current week and next week planning tabs
 - **Volume Persistence**: Data directory mounted as Docker volume
 - **Health Checks**: Container includes health monitoring
+- **API Fallback**: Falls back to localStorage if server unavailable
 
 ### Evolution & Extensibility
 The system is designed to grow:
 - Add recipes to `master_recipes.json` - they instantly appear everywhere
 - Weekly plans stored by ISO week for easy historical tracking
-- Rating data persists locally for privacy
+- Rating data persists on server for multi-device access
 - Shopping list aggregates and organizes automatically
-- Ready for backend API integration (PostgreSQL, Node.js)
+- Ready for database integration (PostgreSQL, MongoDB)
 
 ## Future Enhancements
 
@@ -248,14 +306,17 @@ The system is designed to grow:
 - ✓ Sequential recipe IDs for database compatibility
 - ✓ Docker containerization
 - ✓ Shopping list with category organization
+- ✓ Node.js backend API for data persistence
+- ✓ Server-side storage for ratings and plans
+- ✓ Direct file upload for recipe images/PDFs
+- ✓ Modal overlays for recipes and shopping list
+- ✓ Print functionality without new windows
+- ✓ Current week / Next week planning tabs
+- ✓ Export buttons for plans and ratings
+- ✓ View and print icons on recipe cards
 
 ### Planned
-- Create a save list button
-- Create a show recipe button, with URL link, and print button
-- Setup application to use a data director for docker
-- Edit shopping list print template, no app title
-- Add favorites option, favorites interface with user selector, add/remove, possibly in recipe filters
-- Export ratings and meal plans to CSV
+- Add favorites option with user selector and add/remove functionality
 - Recipe search and filter by category, cook time, or rating
 - Ingredient substitution suggestions
 - Nutrition information per recipe
@@ -264,9 +325,9 @@ The system is designed to grow:
 - Meal prep instructions and tips
 - Mobile-responsive improvements
 - Recipe scaling (adjust servings)
-- Backend API with PostgreSQL
+- Database integration (PostgreSQL/MongoDB)
 - Multi-device sync
-- User authentication, allow some interfaces based on
+- User authentication
 
 ## Family Members
 

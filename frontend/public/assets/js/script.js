@@ -1,11 +1,93 @@
 let selectedRating = null;
 let currentPerson = 'Travis';
+let ratingsLoaded = false;
 
 // Initialize the app
-function init() {
+async function init() {
+    await loadRatingsFromFile();
     loadRecipesForRating();
     setupRatingButtons();
     loadDashboard();
+}
+
+// Load ratings from API (with localStorage fallback)
+async function loadRatingsFromFile() {
+    try {
+        const response = await fetch('/api/ratings');
+        if (response.ok) {
+            const data = await response.json();
+            const ratings = data.ratings || [];
+            // Save to localStorage as backup
+            localStorage.setItem('dinnerRatings', JSON.stringify(ratings));
+            ratingsLoaded = true;
+            return;
+        }
+    } catch (error) {
+        console.log('API not available, falling back to localStorage');
+    }
+
+    ratingsLoaded = true;
+}
+
+// Save ratings to API (with localStorage fallback)
+async function saveRatings(ratings) {
+    // Always save to localStorage as backup
+    localStorage.setItem('dinnerRatings', JSON.stringify(ratings));
+
+    // Try to save to API
+    try {
+        const response = await fetch('/api/ratings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ratings: ratings })
+        });
+        if (response.ok) {
+            console.log('Ratings saved to server');
+        }
+    } catch (error) {
+        console.log('Could not save to API, saved to localStorage only');
+    }
+}
+
+// Add a single rating via API
+async function addRatingToServer(rating) {
+    try {
+        const response = await fetch('/api/ratings/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(rating)
+        });
+        if (response.ok) {
+            console.log('Rating added to server');
+            return true;
+        }
+    } catch (error) {
+        console.log('Could not add rating to API');
+    }
+    return false;
+}
+
+// Export ratings as downloadable JSON file
+function exportRatings() {
+    const ratings = getRatings();
+    const exportData = {
+        ratings: ratings,
+        metadata: {
+            version: "1.0",
+            lastUpdated: new Date().toISOString(),
+            description: "Recipe ratings from family members"
+        }
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'ratings.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 }
 
 // Load recipes from master database for rating dropdown
@@ -81,7 +163,7 @@ function setupRatingButtons() {
 }
 
 // Submit rating
-function submitRating() {
+async function submitRating() {
     const userName = document.getElementById('user-select').value;
     const recipe = document.getElementById('recipe-select').value;
 
@@ -108,10 +190,13 @@ function submitRating() {
         dateFormatted: new Date().toLocaleString()
     };
 
-    // Save to localStorage
+    // Save to localStorage as backup
     let ratings = getRatings();
     ratings.push(rating);
     localStorage.setItem('dinnerRatings', JSON.stringify(ratings));
+
+    // Save to API
+    addRatingToServer(rating);
 
     // Show success message
     const successMsg = document.getElementById('success-message');
@@ -137,7 +222,7 @@ function getRatings() {
 }
 
 // Switch tabs
-function showTab(tabName) {
+function showTab(tabName, weekMode) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
@@ -149,6 +234,10 @@ function showTab(tabName) {
     } else if (tabName === 'history') {
         if (typeof renderPlanHistory === 'function') {
             renderPlanHistory();
+        }
+    } else if (tabName === 'planner' && weekMode) {
+        if (typeof switchPlanningMode === 'function') {
+            switchPlanningMode(weekMode);
         }
     }
 }

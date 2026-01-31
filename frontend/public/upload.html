@@ -210,24 +210,15 @@
             <div class="instructions-card">
                 <h3>📋 How to Process Uploaded Recipes</h3>
                 <ol>
-                    <li><strong>Upload files:</strong> Drag and drop recipe images or PDFs above</li>
-                    <li><strong>Files are saved to:</strong> <code>uploads/images/</code> or <code>uploads/pdfs/</code></li>
+                    <li><strong>Upload files:</strong> Drag and drop recipe images or PDFs above - they are saved directly to the server</li>
                     <li><strong>Process with Claude Code:</strong>
                         <ul style="margin-top: 10px;">
                             <li>Open Claude Code in your terminal</li>
-                            <li>Run: <code>Read the file uploads/images/[filename]</code></li>
-                            <li>Ask: "Extract this recipe and add it to master_recipes.json"</li>
-                            <li>Claude will read the image/PDF and add it to the database</li>
+                            <li>Ask: "Check the upload folder for new files"</li>
+                            <li>Claude will read the image/PDF and add it to master_recipes.json</li>
                         </ul>
                     </li>
-                    <li><strong>Automation (Optional):</strong> Set up n8n workflow to automatically:
-                        <ul style="margin-top: 10px;">
-                            <li>Watch the uploads folder</li>
-                            <li>Trigger when new files appear</li>
-                            <li>Call Claude Code API with the file</li>
-                            <li>Move processed files to <code>uploads/processed/</code></li>
-                        </ul>
-                    </li>
+                    <li><strong>After processing:</strong> Files are automatically moved to <code>data/uploads/processed/</code></li>
                 </ol>
             </div>
         </div>
@@ -238,17 +229,23 @@
         const fileInput = document.getElementById('fileInput');
         const fileList = document.getElementById('fileList');
         const fileListContent = document.getElementById('fileListContent');
-        let uploadedFiles = loadUploadedFiles();
+        let uploadedFiles = [];
 
-        // Load previously uploaded files from localStorage
-        function loadUploadedFiles() {
-            const saved = localStorage.getItem('uploadedRecipeFiles');
-            return saved ? JSON.parse(saved) : [];
-        }
-
-        // Save uploaded files to localStorage
-        function saveUploadedFiles() {
-            localStorage.setItem('uploadedRecipeFiles', JSON.stringify(uploadedFiles));
+        // Load uploaded files from server
+        async function loadUploadedFiles() {
+            try {
+                const response = await fetch('/api/uploads');
+                if (response.ok) {
+                    const data = await response.json();
+                    uploadedFiles = [
+                        ...data.images.map(f => ({ ...f, type: 'image', folder: 'images' })),
+                        ...data.pdfs.map(f => ({ ...f, type: 'pdf', folder: 'pdfs' }))
+                    ].sort((a, b) => new Date(b.uploaded) - new Date(a.uploaded));
+                    renderFileList();
+                }
+            } catch (error) {
+                console.log('Could not load uploads from server');
+            }
         }
 
         // Prevent default drag behaviors
@@ -293,54 +290,52 @@
         function handleFiles(files) {
             [...files].forEach(file => {
                 if (file.type.startsWith('image/') || file.type === 'application/pdf') {
-                    processFile(file);
+                    uploadFile(file);
                 } else {
                     alert(`File ${file.name} is not an image or PDF`);
                 }
             });
         }
 
-        // Process individual file
-        function processFile(file) {
-            const reader = new FileReader();
+        // Upload file to server
+        async function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
 
-            reader.onload = function(e) {
-                const fileData = {
-                    name: file.name,
-                    type: file.type,
-                    size: formatFileSize(file.size),
-                    uploadDate: new Date().toISOString(),
-                    uploadDateFormatted: new Date().toLocaleString(),
-                    status: 'pending',
-                    dataUrl: e.target.result
-                };
+            // Show uploading status
+            const tempId = Date.now();
+            uploadedFiles.unshift({
+                name: file.name,
+                type: file.type.startsWith('image/') ? 'image' : 'pdf',
+                size: file.size,
+                uploading: true,
+                tempId: tempId
+            });
+            renderFileList();
 
-                uploadedFiles.push(fileData);
-                saveUploadedFiles();
-                renderFileList();
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
 
-                // Simulate file saving (in a real app, this would send to a server)
-                simulateFileSave(file, fileData);
-            };
-
-            reader.readAsDataURL(file);
-        }
-
-        // Simulate saving file to server/folder
-        function simulateFileSave(file, fileData) {
-            const folder = file.type === 'application/pdf' ? 'pdfs' : 'images';
-            console.log(`Simulating save to uploads/${folder}/${file.name}`);
-
-            // Show success message
-            setTimeout(() => {
-                const index = uploadedFiles.findIndex(f => f.name === fileData.name && f.uploadDate === fileData.uploadDate);
-                if (index > -1) {
-                    uploadedFiles[index].status = 'ready';
-                    uploadedFiles[index].savedPath = `uploads/${folder}/${file.name}`;
-                    saveUploadedFiles();
+                if (response.ok) {
+                    const data = await response.json();
+                    // Remove temp entry and reload list
+                    await loadUploadedFiles();
+                } else {
+                    const error = await response.json();
+                    alert(`Upload failed: ${error.error}`);
+                    // Remove temp entry
+                    uploadedFiles = uploadedFiles.filter(f => f.tempId !== tempId);
                     renderFileList();
                 }
-            }, 1000);
+            } catch (error) {
+                alert(`Upload failed: ${error.message}`);
+                // Remove temp entry
+                uploadedFiles = uploadedFiles.filter(f => f.tempId !== tempId);
+                renderFileList();
+            }
         }
 
         // Format file size
@@ -361,38 +356,65 @@
 
             fileList.style.display = 'block';
 
-            fileListContent.innerHTML = uploadedFiles.map((file, index) => `
-                <div class="file-item">
-                    <div class="file-info">
-                        <div class="file-name">
-                            ${file.type === 'application/pdf' ? '📄' : '🖼️'} ${file.name}
+            fileListContent.innerHTML = uploadedFiles.map((file, index) => {
+                if (file.uploading) {
+                    return `
+                        <div class="file-item">
+                            <div class="file-info">
+                                <div class="file-name">
+                                    ${file.type === 'pdf' ? '📄' : '🖼️'} ${file.name}
+                                </div>
+                                <div class="file-meta">
+                                    <span style="color: #667eea;">⏳ Uploading...</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="file-meta">
-                            ${file.size} • Uploaded ${file.uploadDateFormatted}
-                            ${file.savedPath ? `<br>📁 ${file.savedPath}` : ''}
+                    `;
+                }
+
+                const uploadDate = new Date(file.uploaded).toLocaleString();
+                return `
+                    <div class="file-item">
+                        <div class="file-info">
+                            <div class="file-name">
+                                ${file.type === 'pdf' ? '📄' : '🖼️'} ${file.name}
+                            </div>
+                            <div class="file-meta">
+                                ${formatFileSize(file.size)} • Uploaded ${uploadDate}
+                                <br>📁 <code>${file.path}</code>
+                            </div>
+                        </div>
+                        <div class="file-actions">
+                            <span class="status-badge status-ready">✓ Saved</span>
+                            <button class="remove-btn" onclick="deleteFile('${file.folder}', '${file.name}')">Delete</button>
                         </div>
                     </div>
-                    <div class="file-actions">
-                        <span class="status-badge ${file.status === 'ready' ? 'status-ready' : 'status-pending'}">
-                            ${file.status === 'ready' ? '✓ Ready' : '⏳ Pending'}
-                        </span>
-                        <button class="remove-btn" onclick="removeFile(${index})">Remove</button>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
-        // Remove file
-        function removeFile(index) {
-            if (confirm('Remove this file from the list?')) {
-                uploadedFiles.splice(index, 1);
-                saveUploadedFiles();
-                renderFileList();
+        // Delete file from server
+        async function deleteFile(folder, filename) {
+            if (!confirm(`Delete ${filename}?`)) return;
+
+            try {
+                const response = await fetch(`/api/uploads/${folder}/${filename}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    await loadUploadedFiles();
+                } else {
+                    const error = await response.json();
+                    alert(`Delete failed: ${error.error}`);
+                }
+            } catch (error) {
+                alert(`Delete failed: ${error.message}`);
             }
         }
 
-        // Initial render
-        renderFileList();
+        // Initial load
+        loadUploadedFiles();
     </script>
 </body>
 </html>

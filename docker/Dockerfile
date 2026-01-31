@@ -1,36 +1,44 @@
-# Multi-stage build for Dinner Time application
-FROM nginx:alpine
+# Node.js server for Dinner Time application
+FROM node:18-alpine
 
 # Metadata
 LABEL maintainer="Travis Robertson"
 LABEL description="Dinner Time - Recipe Planning and Rating System"
-LABEL version="1.0"
+LABEL version="2.0"
 
-# Remove default nginx website
-RM /usr/share/nginx/html/*
+# Create app directory
+WORKDIR /app
 
-# Copy custom nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy server package files
+COPY ../server/package*.json ./server/
 
-# Copy frontend application
-COPY ../frontend/public /usr/share/nginx/html
+# Install dependencies
+WORKDIR /app/server
+RUN npm install --production
 
-# Copy data directory (recipes database)
-# Note: In production, consider mounting this as a volume instead
-COPY ../data /usr/share/nginx/html/data
+# Copy application files
+WORKDIR /app
+COPY ../server ./server
+COPY ../frontend ./frontend
+COPY ../data ./data
 
 # Create uploads directory with proper permissions
-RUN mkdir -p /usr/share/nginx/html/data/uploads/images \
-    /usr/share/nginx/html/data/uploads/pdfs \
-    /usr/share/nginx/html/data/uploads/processed && \
-    chown -R nginx:nginx /usr/share/nginx/html/data/uploads
+RUN mkdir -p /app/data/uploads/images \
+    /app/data/uploads/pdfs \
+    /app/data/uploads/processed && \
+    chmod -R 755 /app/data
 
-# Expose port 80
-EXPOSE 80
+# Expose port 3000
+EXPOSE 3000
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost:80/ || exit 1
+  CMD wget --quiet --tries=1 --spider http://localhost:3000/ || exit 1
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Start the server
+WORKDIR /app/server
+CMD ["node", "server.js"]
