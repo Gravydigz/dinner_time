@@ -316,6 +316,8 @@ The system is designed to grow:
 - ✓ View and print icons on recipe cards
 
 ### Planned
+- Read family members from members.json
+- Create browser interfaces to manually edit members.json, ratings.json (add/delete/change)
 - Add favorites option with user selector and add/remove functionality
 - Recipe search and filter by category, cook time, or rating
 - Ingredient substitution suggestions
@@ -331,10 +333,7 @@ The system is designed to grow:
 
 ## Family Members
 
-- Travis
-- Heidi
-- Stella
-- Dylan
+- Read from file
 
 ---
 
