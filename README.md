@@ -254,6 +254,7 @@ The system is designed to grow:
 - Create a show recipe button, with URL link, and print button
 - Setup application to use a data director for docker
 - Edit shopping list print template, no app title
+- Add favorites option, favorites interface with user selector, add/remove, possibly in recipe filters
 - Export ratings and meal plans to CSV
 - Recipe search and filter by category, cook time, or rating
 - Ingredient substitution suggestions
@@ -265,7 +266,7 @@ The system is designed to grow:
 - Recipe scaling (adjust servings)
 - Backend API with PostgreSQL
 - Multi-device sync
-- User authentication
+- User authentication, allow some interfaces based on
 
 ## Family Members
 
