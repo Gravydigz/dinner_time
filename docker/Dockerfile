@@ -30,6 +30,10 @@ RUN mkdir -p /app/data/uploads/images \
     /app/data/uploads/processed && \
     chmod -R 755 /app/data
 
+# Copy the entrypoint script into the image and make it executable
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Expose port 3000
 EXPOSE 3000
 
@@ -40,6 +44,9 @@ ENV PORT=3000
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --quiet --tries=1 --spider http://localhost:3000/ || exit 1
+
+# Set the entrypoint to your script
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 # Start the server
 WORKDIR /app/server
