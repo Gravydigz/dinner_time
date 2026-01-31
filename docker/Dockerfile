@@ -22,7 +22,7 @@ RUN npm install --production
 WORKDIR /app
 COPY ../server ./server
 COPY ../frontend ./frontend
-COPY ../data ./data
+COPY ../data ./tmp
 
 # Create uploads directory with proper permissions
 RUN mkdir -p /app/data/uploads/images \
