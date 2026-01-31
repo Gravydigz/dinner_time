@@ -1,4 +1,6 @@
 # Node.js server for Dinner Time application
+# Build out of root directory dinner_time
+# docker build -t gravydigz/dinner-time:latest -t gravydigz/dinner-time:latest -f ./docker/Dockerfile .
 FROM node:18-alpine
 
 # Metadata
