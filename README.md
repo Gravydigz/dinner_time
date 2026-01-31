@@ -250,6 +250,10 @@ The system is designed to grow:
 - ✓ Shopping list with category organization
 
 ### Planned
+- Create a save list button
+- Create a show recipe button, with URL link, and print button
+- Setup application to use a data director for docker
+- Edit shopping list print template, no app title
 - Export ratings and meal plans to CSV
 - Recipe search and filter by category, cook time, or rating
 - Ingredient substitution suggestions
