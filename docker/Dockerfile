@@ -6,7 +6,7 @@ FROM node:18-alpine
 # Metadata
 LABEL maintainer="Travis Robertson"
 LABEL description="Dinner Time - Recipe Planning and Rating System"
-LABEL version="2026.01.00.2"
+LABEL version="2026.01.00.3"
 
 # Create app directory
 WORKDIR /app
