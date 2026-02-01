@@ -13,6 +13,9 @@ LABEL version="2026.01.31.01"
 # Create app directory
 WORKDIR /app
 
+# Copy server package files
+COPY ../server/package*.json ./server/
+
 # Install dependencies
 WORKDIR /app/server
 RUN npm install --production
