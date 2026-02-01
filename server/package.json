@@ -1,6 +1,6 @@
 {
   "name": "dinner-time-server",
-  "version": "2026.01.00.3",
+  "version": "2026.01.31.01",
   "description": "Backend server for Dinner Time meal planning app",
   "main": "server.js",
   "scripts": {
