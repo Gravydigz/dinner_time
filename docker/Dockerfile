@@ -13,18 +13,15 @@ LABEL version="2026.01.31.01"
 # Create app directory
 WORKDIR /app
 
-# Copy server package files
-COPY ../server/package*.json ./server/
-
 # Install dependencies
 WORKDIR /app/server
 RUN npm install --production
 
 # Copy application files
 WORKDIR /app
-COPY ../server ./server
-COPY ../frontend ./frontend
-COPY ../data ./tmp
+COPY ./server ./server
+COPY ./frontend ./frontend
+COPY ./data ./tmp
 
 # Create uploads directory with proper permissions
 RUN mkdir -p /app/data/uploads/images \
