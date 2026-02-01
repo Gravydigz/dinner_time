@@ -96,7 +96,7 @@ async function loadRecipesForRating() {
     if (!select) return;
 
     try {
-        const response = await fetch('../../data/recipes/master_recipes.json');
+        const response = await fetch('../../data/master_recipes.json');
         const data = await response.json();
 
         // Group by category
