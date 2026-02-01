@@ -4,7 +4,7 @@
 
 const CONFIG = {
     // Data paths - adjust based on environment
-    recipesPath: '../../data/recipes/master_recipes.json',
+    recipesPath: '../../data/master_recipes.json',
     uploadsPath: '../../data/uploads/',
 
     // API endpoints (for future backend)
