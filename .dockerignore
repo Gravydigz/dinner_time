@@ -12,6 +12,7 @@ docker/
 .dockerignore
 Dockerfile
 docker-compose.yml
+!docker/docker-entrypoint.sh
 
 # Development files
 .vscode/
