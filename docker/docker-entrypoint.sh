@@ -31,5 +31,15 @@ else
   echo "File removed."
 fi
 
+if [ ! -f /app/data/members.json ]; then
+  echo "Members file not found in /app/data, copying from image..."
+  cp /app/tmp/members.json /app/data/members.json
+  echo "Copy complete."
+else
+  echo "Members file exists, removing temp file..."
+  rm -f /app/tmp/members.json
+  echo "File removed."
+fi
+
 # Execute the main application command (passed as arguments to the script)
 exec "$@"

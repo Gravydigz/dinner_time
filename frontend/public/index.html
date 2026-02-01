@@ -55,14 +55,6 @@
                         <h2>Weekly Plan History</h2>
                         <p class="subtitle">View your past meal plans by ISO week</p>
                     </div>
-                    <button class="export-btn" onclick="exportWeeklyPlans()" title="Export to JSON file">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                        </svg>
-                        Export Plans
-                    </button>
                 </div>
                 <div id="plan-history-list"></div>
             </div>
@@ -77,10 +69,7 @@
                     <label for="user-select">Your Name:</label>
                     <select id="user-select" required>
                         <option value="">-- Select Your Name --</option>
-                        <option value="Travis">Travis</option>
-                        <option value="Heidi">Heidi</option>
-                        <option value="Stella">Stella</option>
-                        <option value="Dylan">Dylan</option>
+                        <!-- Members loaded dynamically from API -->
                     </select>
                 </div>
 
@@ -120,27 +109,14 @@
 
             <div class="dashboard-card">
                 <h2>Favorites by Person</h2>
-                <div class="person-tabs">
-                    <button class="person-btn active" onclick="showPersonStats('Travis')">Travis</button>
-                    <button class="person-btn" onclick="showPersonStats('Heidi')">Heidi</button>
-                    <button class="person-btn" onclick="showPersonStats('Stella')">Stella</button>
-                    <button class="person-btn" onclick="showPersonStats('Dylan')">Dylan</button>
+                <div id="person-tabs" class="person-tabs">
+                    <!-- Member buttons loaded dynamically from API -->
                 </div>
                 <div id="person-favorites"></div>
             </div>
 
             <div class="dashboard-card">
-                <div class="section-header">
-                    <h2>All Ratings History</h2>
-                    <button class="export-btn" onclick="exportRatings()" title="Export to JSON file">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                        </svg>
-                        Export Ratings
-                    </button>
-                </div>
+                <h2>All Ratings History</h2>
                 <div id="ratings-history"></div>
             </div>
         </div>

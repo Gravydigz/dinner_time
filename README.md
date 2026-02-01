@@ -24,6 +24,7 @@ dinner_time/
 │
 ├── data/                         # Data layer (persisted by server)
 │   ├── master_recipes.json      # Master recipe database
+│   ├── members.json             # Family members for rating system
 │   ├── weekly_plans.json        # Weekly meal plans by ISO week
 │   ├── ratings.json             # Recipe ratings from family members
 │   └── uploads/                 # Upload repository (created dynamically)
@@ -87,7 +88,7 @@ Automatically creates an organized shopping list:
 
 ### Rating System
 The web application allows family members to:
-- Select their name (Travis, Heidi, Stella, or Dylan)
+- Select their name from the family members list
 - Choose a recipe from a dropdown list
 - Rate recipes on a scale of 1-5 (5 being great)
 - Submit ratings with automatic date/time tracking
@@ -161,6 +162,7 @@ docker-compose up --build
 ### Server-Side Storage (Node.js Backend)
 The application uses a Node.js Express server for persistent data storage:
 - **Recipes**: `data/master_recipes.json`
+- **Members**: `data/members.json` - Family members for ratings
 - **Weekly Plans**: `data/weekly_plans.json` - Saved via API
 - **Ratings**: `data/ratings.json` - Saved via API
 - **Uploads**: `data/uploads/images/` and `data/uploads/pdfs/`
@@ -168,6 +170,7 @@ The application uses a Node.js Express server for persistent data storage:
 ### API Endpoints
 | Method | Endpoint | Description |
 |--------|----------|-------------|
+| GET | `/api/members` | Get all family members |
 | GET | `/api/recipes` | Get all recipes |
 | GET | `/api/plans` | Get all weekly plans |
 | POST | `/api/plans` | Save weekly plans |
@@ -309,11 +312,10 @@ The system is designed to grow:
 - ✓ Modal overlays for recipes and shopping list
 - ✓ Print functionality without new windows
 - ✓ Current week / Next week planning tabs
-- ✓ Export buttons for plans and ratings
 - ✓ View and print icons on recipe cards
+- ✓ Family members loaded from members.json
 
 ### Planned
-- Read family members from members.json
 - Create browser interfaces to manually edit members.json, ratings.json (add/delete/change)
 - Add favorites option with user selector and add/remove functionality
 - Recipe search and filter by category, cook time, or rating
@@ -330,7 +332,7 @@ The system is designed to grow:
 
 ## Family Members
 
-- Read from file
+Family members are stored in `data/members.json` and loaded dynamically via the `/api/members` endpoint.
 
 ---
 

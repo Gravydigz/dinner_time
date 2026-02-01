@@ -185,6 +185,15 @@ app.post('/api/ratings/add', (req, res) => {
     }
 });
 
+// ============ Members API ============
+
+// GET all members
+app.get('/api/members', (req, res) => {
+    const membersFile = path.join(DATA_DIR, 'members.json');
+    const data = readJsonFile(membersFile, { members: [] });
+    res.json(data);
+});
+
 // ============ Recipes API ============
 
 // GET all recipes

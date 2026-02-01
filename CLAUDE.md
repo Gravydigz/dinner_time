@@ -28,6 +28,7 @@ There is no build step, test suite, or linter configured. The app runs directly 
 
 ### Data Layer
 - **Master recipe database:** `data/master_recipes.json` - single source of truth for all recipes
+- **Family members:** `data/members.json` - list of family members for ratings
 - **Server storage:** `data/ratings.json` and `data/weekly_plans.json` for persistent API storage
 - **Client fallback:** Browser localStorage used if server unavailable
 - **Uploads:** `data/uploads/` for recipe images/PDFs awaiting processing
@@ -74,4 +75,4 @@ Add new recipes directly to `data/master_recipes.json` - they appear immediately
 
 ## Family Members
 
-The rating system tracks preferences for: Travis, Heidi, Stella, Dylan
+Family members are stored in `data/members.json` and loaded dynamically via the `/api/members` endpoint. The rating system and dashboard use this data to display member options.

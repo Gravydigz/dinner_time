@@ -111,28 +111,6 @@ async function saveWeeklyPlans() {
     }
 }
 
-// Export weekly plans as downloadable JSON file
-function exportWeeklyPlans() {
-    const exportData = {
-        plans: weeklyPlans,
-        metadata: {
-            version: "1.0",
-            lastUpdated: new Date().toISOString(),
-            description: "Weekly meal plans tracking ISO week dates and selected recipes"
-        }
-    };
-
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'weekly_plans.json';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-}
-
 // Load master recipes from API
 async function loadMasterRecipes() {
     try {
@@ -615,7 +593,21 @@ function renderShoppingListModal(categories) {
     const modalHtml = `
         <div id="shopping-list-modal" class="recipe-modal-overlay" onclick="closeShoppingListModal(event)">
             <div class="recipe-modal-content" onclick="event.stopPropagation()">
-                <button class="recipe-modal-close" onclick="closeShoppingListModal()">&times;</button>
+                <div class="recipe-modal-actions">
+                    <button class="recipe-modal-icon-btn" onclick="printShoppingList()" title="Print Shopping List">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                            <rect x="6" y="14" width="12" height="8"></rect>
+                        </svg>
+                    </button>
+                    <button class="recipe-modal-icon-btn" onclick="closeShoppingListModal()" title="Close">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
 
                 <div class="recipe-modal-header">
                     <h1>Shopping List</h1>
@@ -633,8 +625,6 @@ function renderShoppingListModal(categories) {
                 </div>
 
                 ${categoriesHtml}
-
-                <button class="recipe-modal-print" onclick="printShoppingList()">Print List</button>
             </div>
         </div>
     `;
@@ -761,13 +751,13 @@ function printShoppingList() {
 }
 
 // Render plan history
-function renderPlanHistory() {
+async function renderPlanHistory() {
     const container = document.getElementById('plan-history-list');
     if (!container) return;
 
-    const plans = loadWeeklyPlans();
+    const plans = await loadWeeklyPlans();
 
-    if (plans.length === 0) {
+    if (!plans || plans.length === 0) {
         container.innerHTML = '<p class="no-data">No weekly plans yet. Create your first plan in the Weekly Planner tab!</p>';
         return;
     }

@@ -1,0 +1,12 @@
+{
+  "members": [
+    { "id": 1, "name": "Travis" },
+    { "id": 2, "name": "Heidi" },
+    { "id": 3, "name": "Stella" },
+    { "id": 4, "name": "Dylan" }
+  ],
+  "metadata": {
+    "version": "1.0",
+    "description": "Family members for the rating system"
+  }
+}

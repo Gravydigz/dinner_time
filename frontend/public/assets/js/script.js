@@ -1,13 +1,67 @@
 let selectedRating = null;
-let currentPerson = 'Travis';
+let currentPerson = null;
 let ratingsLoaded = false;
+let members = [];
 
 // Initialize the app
 async function init() {
+    await loadMembers();
     await loadRatingsFromFile();
     loadRecipesForRating();
     setupRatingButtons();
     loadDashboard();
+}
+
+// Load members from API
+async function loadMembers() {
+    try {
+        const response = await fetch('/api/members');
+        if (response.ok) {
+            const data = await response.json();
+            members = data.members || [];
+            if (members.length > 0) {
+                currentPerson = members[0].name;
+            }
+            populateUserSelect();
+            populatePersonTabs();
+            return;
+        }
+    } catch (error) {
+        console.error('Error loading members:', error);
+    }
+
+    // Show error if members can't be loaded
+    const userSelect = document.getElementById('user-select');
+    if (userSelect) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'Error: Could not load members';
+        option.disabled = true;
+        userSelect.appendChild(option);
+    }
+}
+
+// Populate user select dropdown with members
+function populateUserSelect() {
+    const select = document.getElementById('user-select');
+    if (!select || members.length === 0) return;
+
+    members.forEach(member => {
+        const option = document.createElement('option');
+        option.value = member.name;
+        option.textContent = member.name;
+        select.appendChild(option);
+    });
+}
+
+// Populate person tabs on dashboard with members
+function populatePersonTabs() {
+    const container = document.getElementById('person-tabs');
+    if (!container || members.length === 0) return;
+
+    container.innerHTML = members.map((member, index) => `
+        <button class="person-btn${index === 0 ? ' active' : ''}" onclick="showPersonStats('${member.name}')">${member.name}</button>
+    `).join('');
 }
 
 // Load ratings from API (with localStorage fallback)
@@ -65,29 +119,6 @@ async function addRatingToServer(rating) {
         console.log('Could not add rating to API');
     }
     return false;
-}
-
-// Export ratings as downloadable JSON file
-function exportRatings() {
-    const ratings = getRatings();
-    const exportData = {
-        ratings: ratings,
-        metadata: {
-            version: "1.0",
-            lastUpdated: new Date().toISOString(),
-            description: "Recipe ratings from family members"
-        }
-    };
-
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'ratings.json';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
 }
 
 // Load recipes from master database for rating dropdown
