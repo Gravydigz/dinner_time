@@ -6,6 +6,7 @@ const multer = require('multer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const APP_VERSION = '2026.01.31.02';
 
 // Paths to data files
 const DATA_DIR = path.join(__dirname, '..', 'data');
@@ -185,6 +186,13 @@ app.post('/api/ratings/add', (req, res) => {
     }
 });
 
+// ============ Version API ============
+
+// GET app version
+app.get('/api/version', (req, res) => {
+    res.json({ version: APP_VERSION });
+});
+
 // ============ Members API ============
 
 // GET all members
@@ -201,6 +209,29 @@ app.get('/api/recipes', (req, res) => {
     const recipesFile = path.join(DATA_DIR, 'master_recipes.json');
     const data = readJsonFile(recipesFile, { recipes: [] });
     res.json(data);
+});
+
+// PUT update a recipe
+app.put('/api/recipes/:id', (req, res) => {
+    const recipeId = req.params.id;
+    const updatedRecipe = req.body;
+
+    const recipesFile = path.join(DATA_DIR, 'master_recipes.json');
+    const data = readJsonFile(recipesFile, { recipes: [] });
+
+    const index = data.recipes.findIndex(r => r.id === recipeId);
+    if (index === -1) {
+        return res.status(404).json({ error: 'Recipe not found' });
+    }
+
+    // Preserve recipeId and id, update other fields
+    data.recipes[index] = { ...data.recipes[index], ...updatedRecipe };
+
+    if (writeJsonFile(recipesFile, data)) {
+        res.json({ success: true, recipe: data.recipes[index] });
+    } else {
+        res.status(500).json({ error: 'Failed to save recipe' });
+    }
 });
 
 // ============ File Upload API ============
@@ -340,16 +371,19 @@ app.listen(PORT, () => {
     console.log(`
 ╔════════════════════════════════════════════════╗
 ║           Dinner Time Server                   ║
+║            Version ${APP_VERSION}               ║
 ║────────────────────────────────────────────────║
 ║  Server running at http://localhost:${PORT}       ║
 ║                                                ║
 ║  API Endpoints:                                ║
+║    GET  /api/version     - Get app version     ║
 ║    GET  /api/plans       - Get weekly plans    ║
 ║    POST /api/plans       - Save weekly plans   ║
 ║    GET  /api/ratings     - Get all ratings     ║
 ║    POST /api/ratings     - Save all ratings    ║
 ║    POST /api/ratings/add - Add one rating      ║
 ║    GET  /api/recipes     - Get all recipes     ║
+║    PUT  /api/recipes/:id - Update a recipe     ║
 ║    POST /api/upload      - Upload single file  ║
 ║    POST /api/upload/multiple - Upload multiple ║
 ║    GET  /api/uploads     - List uploaded files ║

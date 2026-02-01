@@ -29,7 +29,8 @@
         "Cook steak tips 5-7 minutes until browning develops",
         "Mix remaining bourbon and honey; pour over tips to glaze. Cook until caramelized to rich brown. Taste and adjust salt if needed",
         "Remove from heat; cool 2-3 minutes before serving"
-      ]
+      ],
+      "notes": ""
     },
     {
       "recipeId": 2,
@@ -57,7 +58,8 @@
         "Mix soy sauce with cornstarch and add to pan",
         "Cook for 2 more minutes until sauce thickens",
         "Serve over rice"
-      ]
+      ],
+      "notes": ""
     },
     {
       "recipeId": 3,
@@ -87,7 +89,8 @@
         "Simmer for 10 minutes",
         "Toss with cooked pasta",
         "Top with Parmesan and fresh basil"
-      ]
+      ],
+      "notes": ""
     },
     {
       "recipeId": 4,
@@ -123,7 +126,8 @@
         "Return sausage to pan and cook until sauce thickens",
         "Stir in basil and spinach until wilted. Season with salt and pepper",
         "Drain pasta and toss with sauce. Serve with parmesan"
-      ]
+      ],
+      "notes": ""
     },
     {
       "recipeId": 5,
@@ -154,7 +158,8 @@
         "Stir in ravioli and add ricotta cheese in chunks. Return to a boil, cover, reduce heat, and simmer 7-10 minutes",
         "Sprinkle with mozzarella cheese. Optional: broil 2-3 minutes",
         "Let rest 2-3 minutes. Top with fresh basil"
-      ]
+      ],
+      "notes": ""
     },
     {
       "recipeId": 6,
@@ -186,7 +191,8 @@
         "Reduce heat to medium. Add garlic and cook 30 seconds. Stir in cream, stock, bouillon, 1/4 cup Parmesan, sun-dried tomatoes, Italian seasoning, black pepper, red pepper flakes, and remaining salt. Whisk until smooth",
         "Return chicken to skillet. Simmer over medium-low heat until internal temp reaches 165°F (8-10 minutes)",
         "Top with remaining Parmesan and fresh basil. Serve over pasta or potatoes"
-      ]
+      ],
+      "notes": ""
     },
     {
       "recipeId": 7,
@@ -225,7 +231,8 @@
         "Add remaining olive oil, garlic, shallot, and sun-dried tomatoes. Sauté 3 minutes. Season with red pepper flakes. Stir in tomato paste and broth",
         "Add tortellini; bring to a simmer. Cover and cook 3-4 minutes",
         "Uncover and stir in cooked chicken, spinach, cream, and parmesan. Serve hot with fresh basil"
-      ]
+      ],
+      "notes": ""
     },
     {
       "recipeId": 8,
@@ -256,7 +263,8 @@
         "Cook on high pressure for 12 minutes. Allow pressure to naturally release for 10 minutes, then quick release remaining pressure",
         "Using two forks, shred chicken. Mix in beans and cream cheese until smooth and creamy",
         "Serve with tortilla chips, cilantro and blue cheese crumbles, if desired"
-      ]
+      ],
+      "notes": ""
     }
   ]
 }

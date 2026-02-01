@@ -67,7 +67,8 @@ There is no build step, test suite, or linter configured. The app runs directly 
   "ingredients": [
     {"item": "ingredient", "amount": "1", "unit": "cup", "additional": "optional notes"}
   ],
-  "instructions": ["Step 1", "Step 2"]
+  "instructions": ["Step 1", "Step 2"],
+  "notes": ""
 }
 ```
 
@@ -76,3 +77,15 @@ Add new recipes directly to `data/master_recipes.json` - they appear immediately
 ## Family Members
 
 Family members are stored in `data/members.json` and loaded dynamically via the `/api/members` endpoint. The rating system and dashboard use this data to display member options.
+
+## Versioning & Changelog
+
+**Version format:** `YYYY.MM.DD.##` (e.g., `2026.01.31.02`)
+
+See `VERSION_INFO.md` for complete versioning details including:
+- All files that need version updates
+- API endpoint for version
+- Docker tagging instructions
+- Quick update checklist
+
+Document all changes in `CHANGELOG.md` under: Added, Changed, Fixed, or Removed

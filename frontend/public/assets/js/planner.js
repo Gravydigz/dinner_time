@@ -44,10 +44,10 @@ function switchPlanningMode(mode) {
 
     if (mode === 'next') {
         title.textContent = `Planning for ${weekInfo.isoWeek} (Next Week)`;
-        subtitle.textContent = 'Select 3-4 recipes for next week';
+        subtitle.textContent = 'Select recipes for next week';
     } else {
         title.textContent = `Planning for ${weekInfo.isoWeek} (Current Week)`;
-        subtitle.textContent = 'Select 3-4 recipes for this week';
+        subtitle.textContent = 'Select recipes for this week';
     }
 
     // Clear current selection and load saved plan for the target week
@@ -149,6 +149,12 @@ function renderMasterRecipeList() {
             <div class="recipe-card-header">
                 <h4>${recipe.name}</h4>
                 <div class="recipe-card-actions">
+                    <button class="view-icon-btn" onclick="event.stopPropagation(); editRecipe('${recipe.id}')" title="Edit Recipe">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </button>
                     <button class="view-icon-btn" onclick="event.stopPropagation(); printRecipe('${recipe.id}')" title="Print Recipe">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="6 9 6 2 18 2 18 9"></polyline>
@@ -340,6 +346,13 @@ function viewRecipe(recipeId) {
                     <h2>Instructions</h2>
                     <ol>${instructionsList}</ol>
                 </div>
+
+                ${recipe.notes ? `
+                <div class="recipe-modal-section">
+                    <h2>Notes</h2>
+                    <p>${recipe.notes}</p>
+                </div>
+                ` : ''}
             </div>
         </div>
     `;
@@ -355,6 +368,288 @@ function closeRecipeModal(event) {
     if (modal) {
         modal.remove();
         document.body.style.overflow = '';
+    }
+}
+
+// Edit recipe in a modal form
+function editRecipe(recipeId) {
+    const recipe = masterRecipes.find(r => r.id === recipeId);
+    if (!recipe) {
+        alert('Recipe not found');
+        return;
+    }
+
+    // Category options
+    const categories = ['Beef', 'Chicken', 'Pasta', 'Seafood', 'Vegetarian', 'Other'];
+    const categoryOptions = categories.map(cat =>
+        `<option value="${cat}" ${recipe.category === cat ? 'selected' : ''}>${cat}</option>`
+    ).join('');
+
+    // Build ingredients list
+    const ingredientsHtml = (recipe.ingredients || []).map((ing, idx) => `
+        <div class="edit-ingredient-row" data-idx="${idx}">
+            <input type="text" class="ing-amount" value="${ing.amount || ''}" placeholder="Amount">
+            <input type="text" class="ing-unit" value="${ing.unit || ''}" placeholder="Unit">
+            <input type="text" class="ing-item" value="${ing.item || ''}" placeholder="Item" required>
+            <input type="text" class="ing-additional" value="${ing.additional || ''}" placeholder="Notes">
+            <button type="button" class="remove-row-btn" onclick="removeIngredientRow(this)">-</button>
+        </div>
+    `).join('');
+
+    // Build instructions list
+    const instructionsHtml = (recipe.instructions || []).map((step, idx) => `
+        <div class="edit-instruction-row" data-idx="${idx}">
+            <span class="instruction-num">${idx + 1}.</span>
+            <textarea class="inst-text" rows="2" required>${step}</textarea>
+            <button type="button" class="remove-row-btn" onclick="removeInstructionRow(this)">-</button>
+        </div>
+    `).join('');
+
+    // Remove existing modal if present
+    const existingModal = document.getElementById('edit-recipe-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+
+    const modalHtml = `
+        <div id="edit-recipe-modal" class="recipe-modal-overlay" onclick="closeEditRecipeModal(event)">
+            <div class="recipe-modal-content edit-modal-content" onclick="event.stopPropagation()">
+                <div class="recipe-modal-actions">
+                    <button class="recipe-modal-icon-btn save-btn" onclick="saveRecipe('${recipe.id}')" title="Save Recipe">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                            <polyline points="7 3 7 8 15 8"></polyline>
+                        </svg>
+                    </button>
+                    <button class="recipe-modal-icon-btn" onclick="closeEditRecipeModal()" title="Close">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="recipe-modal-header">
+                    <h1>Edit Recipe</h1>
+                </div>
+
+                <form id="edit-recipe-form" class="edit-recipe-form">
+                    <div class="form-group">
+                        <label for="edit-name">Name</label>
+                        <input type="text" id="edit-name" value="${recipe.name}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-source">Source</label>
+                        <input type="text" id="edit-source" value="${recipe.source || ''}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-url">URL</label>
+                        <input type="url" id="edit-url" value="${recipe.url || ''}">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="edit-prepTime">Prep Time (min)</label>
+                            <input type="number" id="edit-prepTime" value="${recipe.prepTime || 0}" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-cookTime">Cook Time (min)</label>
+                            <input type="number" id="edit-cookTime" value="${recipe.cookTime || 0}" min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="edit-servings">Servings</label>
+                            <input type="number" id="edit-servings" value="${recipe.servings || 4}" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-category">Category</label>
+                            <select id="edit-category">
+                                ${categoryOptions}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-notes">Notes</label>
+                        <textarea id="edit-notes" rows="3" placeholder="Add any personal notes about this recipe...">${recipe.notes || ''}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ingredients</label>
+                        <div id="edit-ingredients-list">
+                            ${ingredientsHtml}
+                        </div>
+                        <button type="button" class="add-row-btn" onclick="addIngredientRow()">+ Add Ingredient</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Instructions</label>
+                        <div id="edit-instructions-list">
+                            ${instructionsHtml}
+                        </div>
+                        <button type="button" class="add-row-btn" onclick="addInstructionRow()">+ Add Step</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    document.body.style.overflow = 'hidden';
+}
+
+// Close edit recipe modal
+function closeEditRecipeModal(event) {
+    if (event && event.target !== event.currentTarget) return;
+    const modal = document.getElementById('edit-recipe-modal');
+    if (modal) {
+        modal.remove();
+        document.body.style.overflow = '';
+    }
+}
+
+// Add ingredient row
+function addIngredientRow() {
+    const container = document.getElementById('edit-ingredients-list');
+    const idx = container.children.length;
+    const rowHtml = `
+        <div class="edit-ingredient-row" data-idx="${idx}">
+            <input type="text" class="ing-amount" value="" placeholder="Amount">
+            <input type="text" class="ing-unit" value="" placeholder="Unit">
+            <input type="text" class="ing-item" value="" placeholder="Item" required>
+            <input type="text" class="ing-additional" value="" placeholder="Notes">
+            <button type="button" class="remove-row-btn" onclick="removeIngredientRow(this)">-</button>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', rowHtml);
+}
+
+// Remove ingredient row
+function removeIngredientRow(btn) {
+    btn.closest('.edit-ingredient-row').remove();
+    renumberInstructions();
+}
+
+// Add instruction row
+function addInstructionRow() {
+    const container = document.getElementById('edit-instructions-list');
+    const idx = container.children.length;
+    const rowHtml = `
+        <div class="edit-instruction-row" data-idx="${idx}">
+            <span class="instruction-num">${idx + 1}.</span>
+            <textarea class="inst-text" rows="2" required></textarea>
+            <button type="button" class="remove-row-btn" onclick="removeInstructionRow(this)">-</button>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', rowHtml);
+}
+
+// Remove instruction row
+function removeInstructionRow(btn) {
+    btn.closest('.edit-instruction-row').remove();
+    renumberInstructions();
+}
+
+// Renumber instructions after removal
+function renumberInstructions() {
+    const rows = document.querySelectorAll('.edit-instruction-row');
+    rows.forEach((row, idx) => {
+        row.querySelector('.instruction-num').textContent = `${idx + 1}.`;
+    });
+}
+
+// Save recipe
+async function saveRecipe(recipeId) {
+    const form = document.getElementById('edit-recipe-form');
+
+    // Collect form data
+    const name = document.getElementById('edit-name').value.trim();
+    const source = document.getElementById('edit-source').value.trim();
+    const url = document.getElementById('edit-url').value.trim();
+    const prepTime = parseInt(document.getElementById('edit-prepTime').value) || 0;
+    const cookTime = parseInt(document.getElementById('edit-cookTime').value) || 0;
+    const servings = parseInt(document.getElementById('edit-servings').value) || 4;
+    const category = document.getElementById('edit-category').value;
+    const notes = document.getElementById('edit-notes').value.trim();
+
+    // Validate required fields
+    if (!name) {
+        alert('Recipe name is required');
+        return;
+    }
+
+    // Collect ingredients
+    const ingredientRows = document.querySelectorAll('.edit-ingredient-row');
+    const ingredients = [];
+    ingredientRows.forEach(row => {
+        const item = row.querySelector('.ing-item').value.trim();
+        if (item) {
+            ingredients.push({
+                item: item,
+                amount: row.querySelector('.ing-amount').value.trim(),
+                unit: row.querySelector('.ing-unit').value.trim(),
+                additional: row.querySelector('.ing-additional').value.trim()
+            });
+        }
+    });
+
+    // Collect instructions
+    const instructionRows = document.querySelectorAll('.edit-instruction-row');
+    const instructions = [];
+    instructionRows.forEach(row => {
+        const text = row.querySelector('.inst-text').value.trim();
+        if (text) {
+            instructions.push(text);
+        }
+    });
+
+    // Build updated recipe object
+    const updatedRecipe = {
+        name,
+        source,
+        url,
+        prepTime,
+        cookTime,
+        servings,
+        category,
+        notes,
+        ingredients,
+        instructions
+    };
+
+    try {
+        const response = await fetch(`/api/recipes/${recipeId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedRecipe)
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to save recipe');
+        }
+
+        const result = await response.json();
+
+        // Update masterRecipes array in memory
+        const index = masterRecipes.findIndex(r => r.id === recipeId);
+        if (index !== -1) {
+            masterRecipes[index] = { ...masterRecipes[index], ...updatedRecipe };
+        }
+
+        // Close modal and re-render
+        closeEditRecipeModal();
+        renderMasterRecipeList();
+        updateRecipeSelection();
+
+        alert('Recipe saved successfully!');
+    } catch (error) {
+        console.error('Error saving recipe:', error);
+        alert('Failed to save recipe. Please try again.');
     }
 }
 
@@ -839,7 +1134,7 @@ function loadCurrentWeekPlan() {
         title.textContent = `Planning for ${weekInfo.isoWeek} (Current Week)`;
     }
     if (subtitle) {
-        subtitle.textContent = 'Select 3-4 recipes for this week';
+        subtitle.textContent = 'Select recipes for this week';
     }
 
     const currentPlan = weeklyPlans.find(p => p.isoWeek === weekInfo.isoWeek);
