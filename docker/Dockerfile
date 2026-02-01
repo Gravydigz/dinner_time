@@ -33,7 +33,7 @@ RUN mkdir -p /app/data/uploads/images \
     chmod -R 755 /app/data
 
 # Copy the entrypoint script into the image and make it executable
-COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+COPY ./docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Expose port 3000
