@@ -14,7 +14,7 @@ LABEL version="2026.01.31.01"
 WORKDIR /app
 
 # Copy server package files
-COPY ../server/package*.json ./server/
+COPY ./server/package*.json ./server/
 
 # Install dependencies
 WORKDIR /app/server
