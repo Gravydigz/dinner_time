@@ -1,6 +1,8 @@
 # Node.js server for Dinner Time application
 # Build out of root directory dinner_time
-# docker build -t gravydigz/dinner-time:latest -t gravydigz/dinner-time:latest -f ./docker/Dockerfile .
+# docker build -t gravydigz/dinner-time:YYYY.MM.DD.PP -t gravydigz/dinner-time:latest -f ./docker/Dockerfile .
+
+# Source
 FROM node:18-alpine
 
 # Metadata
