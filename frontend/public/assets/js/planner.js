@@ -133,83 +133,32 @@ function exportWeeklyPlans() {
     URL.revokeObjectURL(url);
 }
 
-// Load master recipes from JSON
+// Load master recipes from API
 async function loadMasterRecipes() {
     try {
-        const response = await fetch('../../data/recipes/master_recipes.json');
+        const response = await fetch('/api/recipes');
+        if (!response.ok) throw new Error('Server returned ' + response.status);
         const data = await response.json();
         masterRecipes = data.recipes;
         renderMasterRecipeList();
         loadCurrentWeekPlan();
     } catch (error) {
         console.error('Error loading master recipes:', error);
-        // Fallback to hardcoded data if JSON fails to load
-        masterRecipes = getFallbackRecipes();
-        renderMasterRecipeList();
-        loadCurrentWeekPlan();
+        showRecipeLoadError();
     }
 }
 
-// Fallback recipes if JSON doesn't load
-function getFallbackRecipes() {
-    return [
-        {
-            id: 'bourbon-glazed-steak-tips',
-            name: 'Bourbon-Glazed Steak Tips',
-            category: 'Beef',
-            prepTime: 240,
-            cookTime: 15,
-            servings: 6
-        },
-        {
-            id: 'chicken-stir-fry',
-            name: 'Monday Chicken Stir Fry',
-            category: 'Chicken',
-            prepTime: 15,
-            cookTime: 15,
-            servings: 4
-        },
-        {
-            id: 'pasta-marinara',
-            name: 'Wednesday Pasta Marinara',
-            category: 'Pasta',
-            prepTime: 10,
-            cookTime: 20,
-            servings: 6
-        },
-        {
-            id: 'tuscan-sausage-pasta',
-            name: 'Tuscan Sausage Pasta',
-            category: 'Pasta',
-            prepTime: 10,
-            cookTime: 20,
-            servings: 4
-        },
-        {
-            id: 'one-pot-ravioli-lasagna',
-            name: 'One Pot Ravioli Lasagna',
-            category: 'Pasta',
-            prepTime: 5,
-            cookTime: 20,
-            servings: 4
-        },
-        {
-            id: 'marry-me-chicken',
-            name: 'Marry Me Chicken',
-            category: 'Chicken',
-            prepTime: 15,
-            cookTime: 30,
-            servings: 4
-        },
-        {
-            id: 'marry-me-chicken-tortellini',
-            name: 'Marry Me Chicken Tortellini',
-            category: 'Pasta',
-            prepTime: 10,
-            cookTime: 15,
-            servings: 6
-        }
-    ];
+// Show error when recipes cannot be loaded
+function showRecipeLoadError() {
+    const container = document.getElementById('master-recipe-list');
+    if (container) {
+        container.innerHTML = `
+            <div class="error-message">
+                <h3>Unable to load recipes</h3>
+                <p>Could not connect to the server. Please ensure the server is running and try refreshing the page.</p>
+            </div>
+        `;
+    }
 }
 
 // Render master recipe list

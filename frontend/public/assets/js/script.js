@@ -96,7 +96,7 @@ async function loadRecipesForRating() {
     if (!select) return;
 
     try {
-        const response = await fetch('../../data/master_recipes.json');
+        const response = await fetch('/api/recipes');
         const data = await response.json();
 
         // Group by category
@@ -124,29 +124,13 @@ async function loadRecipesForRating() {
         });
     } catch (error) {
         console.error('Error loading recipes:', error);
-        // Fallback to simple list
-        populateRecipeDropdownFallback(select);
-    }
-}
-
-// Fallback populate recipe dropdown
-function populateRecipeDropdownFallback(select) {
-    const recipes = [
-        'Bourbon-Glazed Steak Tips',
-        'Monday Chicken Stir Fry',
-        'Wednesday Pasta Marinara',
-        'Tuscan Sausage Pasta',
-        'One Pot Ravioli Lasagna',
-        'Marry Me Chicken',
-        'Marry Me Chicken Tortellini'
-    ];
-
-    recipes.forEach(recipe => {
+        // Show error in dropdown
         const option = document.createElement('option');
-        option.value = recipe;
-        option.textContent = recipe;
+        option.value = '';
+        option.textContent = 'Error: Could not load recipes';
+        option.disabled = true;
         select.appendChild(option);
-    });
+    }
 }
 
 // Setup rating button selection

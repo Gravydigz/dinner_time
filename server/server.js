@@ -189,7 +189,7 @@ app.post('/api/ratings/add', (req, res) => {
 
 // GET all recipes
 app.get('/api/recipes', (req, res) => {
-    const recipesFile = path.join(DATA_DIR, 'recipes', 'master_recipes.json');
+    const recipesFile = path.join(DATA_DIR, 'master_recipes.json');
     const data = readJsonFile(recipesFile, { recipes: [] });
     res.json(data);
 });
