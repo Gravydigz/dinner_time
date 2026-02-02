@@ -28,10 +28,10 @@ services:
       - traefik-app
     labels:
       - traefik.enable=true
-      - traefik.http.routers.wud.rule=Host(`dt.lab.local`)
-      - traefik.http.routers.wud.entrypoints=websecure
-      - traefik.http.routers.wud.tls=true
-      - traefik.http.services.wud.loadbalancer.server.port=3010
+      - traefik.http.routers.dinner-time.rule=Host(`dt.lab.local`)
+      - traefik.http.routers.dinner-time.entrypoints=websecure
+      - traefik.http.routers.dinner-time.tls=true
+      - traefik.http.services.dinner-time.loadbalancer.server.port=3010
 networks:
   traefik-app:
     external: true
