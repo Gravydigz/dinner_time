@@ -2,13 +2,13 @@ version: '3.8'
 
 services:
   web:
-    image: gravydigz/dinner-time
+    image: gravydigz/dinner-time:latest
     container_name: dinner-time-web
     ports:
       - "3010:3000" # Change this to your preferred port
     volumes:
       # Mount data directory for persistence (allows server to write directly)
-      - ../data:/app/data
+      - ./data:/app/data
       # Optional: Mount frontend and server for development hot-reload
       # - ../frontend:/app/frontend
       # - ../server:/app/server
