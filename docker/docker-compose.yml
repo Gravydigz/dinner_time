@@ -23,13 +23,18 @@ services:
       timeout: 3s
       retries: 3
       start_period: 5s
+    # Use external traefik network and load balancer
     networks:
-      - dinner-time-network
-
+      - traefik-app
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.wud.rule=Host(`dt.lab.local`)
+      - traefik.http.routers.wud.entrypoints=websecure
+      - traefik.http.routers.wud.tls=true
+      - traefik.http.services.wud.loadbalancer.server.port=3010
 networks:
-  dinner-time-network:
-    driver: bridge
-
+  traefik-app:
+    external: true
 volumes:
   # Named volume for data persistence (optional alternative to bind mount)
   dinner-time-data:
