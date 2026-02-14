@@ -316,6 +316,7 @@ The system is designed to grow:
 - ✓ Family members loaded from members.json
 
 ### Planned
+- Update dashboard to list top 10 favorites, sorted by average rating across all family members
 - Create browser interfaces to manually edit members.json, ratings.json (add/delete/change)
 - Add favorites option with user selector and add/remove functionality
 - Recipe search and filter by category, cook time, or rating
