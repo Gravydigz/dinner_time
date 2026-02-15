@@ -6,11 +6,11 @@ const multer = require('multer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const APP_VERSION = '2602.00.0';
+const APP_VERSION = '2602.01.0';
 
 // n8n webhook configuration
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || '';
-const CALLBACK_BASE_URL = process.env.CALLBACK_BASE_URL || 'http://dinner-time-web:3000';
+const CALLBACK_BASE_URL = process.env.CALLBACK_BASE_URL || 'http://dinner-time:3010';
 
 // In-memory store for pending recipe extractions from n8n
 const pendingRecipes = new Map();
@@ -451,6 +451,65 @@ app.post('/api/process', async (req, res) => {
     }
 });
 
+// POST trigger n8n webhook to process a recipe URL
+app.post('/api/process-url', async (req, res) => {
+    const { url } = req.body;
+
+    if (!url) {
+        return res.status(400).json({ error: 'url is required' });
+    }
+
+    // Validate URL format
+    try {
+        new URL(url);
+    } catch (e) {
+        return res.status(400).json({ error: 'Invalid URL format' });
+    }
+
+    if (!N8N_WEBHOOK_URL) {
+        return res.status(503).json({ error: 'N8N_WEBHOOK_URL not configured' });
+    }
+
+    // Generate tracking filename from URL path
+    const urlPath = new URL(url).pathname
+        .replace(/\/$/, '')
+        .split('/')
+        .pop() || 'recipe';
+    const slug = urlPath
+        .toLowerCase()
+        .replace(/\.[^.]+$/, '')
+        .replace(/[^a-z0-9-]/g, '-')
+        .replace(/-+/g, '-')
+        .substring(0, 60);
+    const filename = `url-${slug}-${Date.now()}`;
+
+    const callbackUrl = `${CALLBACK_BASE_URL}/api/process/result`;
+
+    const payload = {
+        recipeUrl: url,
+        filename,
+        callbackUrl
+    };
+
+    try {
+        const response = await fetch(N8N_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            throw new Error(`n8n responded with status ${response.status}`);
+        }
+
+        console.log(`URL processing triggered for ${url} via n8n webhook (${filename})`);
+        res.json({ success: true, message: 'URL processing started', filename });
+    } catch (error) {
+        console.error('Failed to trigger n8n webhook:', error.message);
+        res.status(502).json({ error: `Failed to reach n8n: ${error.message}` });
+    }
+});
+
 // POST receive processed recipe from n8n callback
 app.post('/api/process/result', (req, res) => {
     const { filename, recipe } = req.body;
@@ -546,6 +605,7 @@ app.listen(PORT, () => {
 ║    GET    /api/uploads          - List uploads     ║
 ║    DELETE /api/uploads/:f/:file - Delete upload    ║
 ║    POST   /api/process          - Trigger AI proc  ║
+║    POST   /api/process-url      - Process URL      ║
 ║    POST   /api/process/result   - n8n callback     ║
 ║    GET    /api/process/pending  - Pending reviews  ║
 ║    DELETE /api/process/pending/:f - Discard pending║

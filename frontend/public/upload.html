@@ -386,6 +386,52 @@
         .cancel-btn:hover {
             background: #5a6268;
         }
+
+        .url-import-section {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .url-import-section h3 {
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .url-input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .url-input-row input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .url-input-row input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .url-status {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #666;
+            min-height: 1.2em;
+        }
+
+        .url-status.error {
+            color: #dc3545;
+        }
+
+        .url-status.success {
+            color: #28a745;
+        }
     </style>
 </head>
 <body>
@@ -413,6 +459,15 @@
                 multiple
             >
 
+            <div class="url-import-section">
+                <h3>Import from URL</h3>
+                <div class="url-input-row">
+                    <input type="text" id="urlInput" placeholder="Paste a recipe URL (e.g., https://www.allrecipes.com/recipe/...)" />
+                    <button class="process-btn" id="urlProcessBtn" onclick="processUrl()">Process URL</button>
+                </div>
+                <div class="url-status" id="urlStatus"></div>
+            </div>
+
             <div class="file-list" id="fileList" style="display: none;">
                 <h3>Uploaded Files</h3>
                 <div id="fileListContent"></div>
@@ -427,6 +482,7 @@
                 <h3>How to Process Uploaded Recipes</h3>
                 <ol>
                     <li><strong>Upload files:</strong> Drag and drop recipe images or PDFs above - they are saved directly to the server</li>
+                    <li><strong>Import from URL:</strong> Paste a recipe URL to extract the recipe directly from the webpage</li>
                     <li><strong>Process with AI:</strong> Click the "Process with AI" button on any uploaded file to send it to the AI for recipe extraction</li>
                     <li><strong>Review &amp; Save:</strong> Extracted recipes appear in the "Pending Review" section for editing before saving</li>
                     <li><strong>After processing:</strong> Files are automatically moved to <code>data/uploads/processed/</code></li>
@@ -692,6 +748,60 @@
                 }
             } catch (error) {
                 alert(`Delete failed: ${error.message}`);
+            }
+        }
+
+        // ============ URL Processing ============
+
+        async function processUrl() {
+            const urlInput = document.getElementById('urlInput');
+            const btn = document.getElementById('urlProcessBtn');
+            const status = document.getElementById('urlStatus');
+            const url = urlInput.value.trim();
+
+            if (!url) {
+                status.textContent = 'Please enter a URL.';
+                status.className = 'url-status error';
+                return;
+            }
+
+            try {
+                new URL(url);
+            } catch (e) {
+                status.textContent = 'Invalid URL format.';
+                status.className = 'url-status error';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Sending to AI...';
+            status.textContent = 'Submitting URL for processing...';
+            status.className = 'url-status';
+
+            try {
+                const response = await fetch('/api/process-url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    status.textContent = 'Processing started! The recipe will appear in Pending Review when ready.';
+                    status.className = 'url-status success';
+                    urlInput.value = '';
+                    pollForPending();
+                } else {
+                    status.textContent = `Failed: ${data.error}`;
+                    status.className = 'url-status error';
+                }
+            } catch (error) {
+                status.textContent = `Failed: ${error.message}`;
+                status.className = 'url-status error';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Process URL';
             }
         }
 

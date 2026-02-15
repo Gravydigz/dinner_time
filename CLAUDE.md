@@ -47,7 +47,7 @@ There is no build step, test suite, or linter configured. The app runs directly 
 - Data persisted server-side via Node.js API with localStorage fallback
 
 ### Docker (`docker/`)
-- Node.js Alpine-based container on port 3000
+- Node.js Alpine-based container on port 3010
 - Volume mounts `data/` for persistence
 - Entrypoint script (`docker-entrypoint.sh`) initializes config files on first run
 

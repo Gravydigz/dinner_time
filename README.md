@@ -316,17 +316,32 @@ The system is designed to grow:
 - ✓ Family members loaded from members.json
 
 ### Planned
+
+**AI Recipe Processing**
+- PDF recipe processing via n8n + Ollama (extract recipes from uploaded PDF files)
+- URL-based recipe import (paste a recipe URL to automatically extract and add the recipe)
+
+**Categories & Meal Planning**
+- Add "Side" as a standard recipe category and ensure it persists through AI processing
+- Category validation in AI processing to prevent category changes during review
+- Meal composition planning — pick a main dish and pair it with sides for a complete meal
+
+**Dashboard & Data Management**
 - Update dashboard to list top 10 favorites, sorted by average rating across all family members
 - Create browser interfaces to manually edit members.json, ratings.json (add/delete/change)
 - Add favorites option with user selector and add/remove functionality
+
+**Recipe Features**
 - Recipe search and filter by category, cook time, or rating
 - Ingredient substitution suggestions
 - Nutrition information per recipe
 - Photo gallery for recipes
 - Comments and notes on recipes
 - Meal prep instructions and tips
-- Mobile-responsive improvements
 - Recipe scaling (adjust servings)
+
+**Infrastructure**
+- Mobile-responsive improvements
 - Database integration (PostgreSQL/MongoDB)
 - Multi-device sync
 - User authentication

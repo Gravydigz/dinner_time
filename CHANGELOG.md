@@ -6,6 +6,22 @@ Version format: `YYMM.VV.P` — YearMonth.Version.Patch
 
 ---
 
+## [2602.01.0] - 2026-02-15
+
+### Added
+- **URL-based recipe import**: Paste a recipe URL to extract recipes directly from webpages
+  - `POST /api/process-url` - Sends URL to n8n for webpage fetching and text extraction
+  - URL input section on the upload page with status feedback
+  - n8n workflow branching: IF node routes URL imports to fetch/clean/text-extract path, file uploads continue through existing vision path
+  - Auto-populates recipe URL field from the source URL when Ollama doesn't extract it
+  - New troubleshooting entries for URL-specific issues (JS-rendered sites, anti-scraping, large HTML)
+
+### Changed
+- Updated n8n workflow documentation with branching architecture diagram and new node configurations
+- Upload page instructions updated to include URL import step
+
+---
+
 ## [2602.00.0] - 2026-02-14
 
 ### Added
