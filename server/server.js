@@ -15,6 +15,9 @@ const CALLBACK_BASE_URL = process.env.CALLBACK_BASE_URL || 'http://dinner-time:3
 // In-memory store for pending recipe extractions from n8n
 const pendingRecipes = new Map();
 
+// In-memory store for submitted URLs awaiting processing
+const submittedUrls = new Map();
+
 // Paths to data files
 const DATA_DIR = path.join(__dirname, '..', 'data');
 const WEEKLY_PLANS_FILE = path.join(DATA_DIR, 'weekly_plans.json');
@@ -451,8 +454,10 @@ app.post('/api/process', async (req, res) => {
     }
 });
 
-// POST trigger n8n webhook to process a recipe URL
-app.post('/api/process-url', async (req, res) => {
+// ============ URL Submission API ============
+
+// POST submit a URL for later processing
+app.post('/api/urls', (req, res) => {
     const { url } = req.body;
 
     if (!url) {
@@ -464,10 +469,6 @@ app.post('/api/process-url', async (req, res) => {
         new URL(url);
     } catch (e) {
         return res.status(400).json({ error: 'Invalid URL format' });
-    }
-
-    if (!N8N_WEBHOOK_URL) {
-        return res.status(503).json({ error: 'N8N_WEBHOOK_URL not configured' });
     }
 
     // Generate tracking filename from URL path
@@ -483,10 +484,51 @@ app.post('/api/process-url', async (req, res) => {
         .substring(0, 60);
     const filename = `url-${slug}-${Date.now()}`;
 
+    const entry = { filename, url, submittedAt: new Date().toISOString() };
+    submittedUrls.set(filename, entry);
+
+    console.log(`URL submitted: ${url} (${filename})`);
+    res.json({ success: true, entry });
+});
+
+// GET list all submitted URLs
+app.get('/api/urls', (req, res) => {
+    res.json({ urls: Array.from(submittedUrls.values()) });
+});
+
+// DELETE remove a submitted URL
+app.delete('/api/urls/:filename', (req, res) => {
+    const { filename } = req.params;
+
+    if (!submittedUrls.has(filename)) {
+        return res.status(404).json({ error: 'URL entry not found' });
+    }
+
+    submittedUrls.delete(filename);
+    res.json({ success: true, message: 'URL entry removed' });
+});
+
+// POST trigger n8n webhook to process a submitted URL
+app.post('/api/process-url', async (req, res) => {
+    const { filename } = req.body;
+
+    if (!filename) {
+        return res.status(400).json({ error: 'filename is required' });
+    }
+
+    const entry = submittedUrls.get(filename);
+    if (!entry) {
+        return res.status(404).json({ error: 'URL entry not found' });
+    }
+
+    if (!N8N_WEBHOOK_URL) {
+        return res.status(503).json({ error: 'N8N_WEBHOOK_URL not configured' });
+    }
+
     const callbackUrl = `${CALLBACK_BASE_URL}/api/process/result`;
 
     const payload = {
-        recipeUrl: url,
+        recipeUrl: entry.url,
         filename,
         callbackUrl
     };
@@ -502,7 +544,7 @@ app.post('/api/process-url', async (req, res) => {
             throw new Error(`n8n responded with status ${response.status}`);
         }
 
-        console.log(`URL processing triggered for ${url} via n8n webhook (${filename})`);
+        console.log(`URL processing triggered for ${entry.url} via n8n webhook (${filename})`);
         res.json({ success: true, message: 'URL processing started', filename });
     } catch (error) {
         console.error('Failed to trigger n8n webhook:', error.message);
@@ -525,7 +567,13 @@ app.post('/api/process/result', (req, res) => {
         receivedAt: new Date().toISOString()
     });
 
-    // Move source file to processed folder
+    // Remove from submitted URLs if it was a URL entry
+    if (submittedUrls.has(filename)) {
+        submittedUrls.delete(filename);
+        console.log(`Removed URL entry ${filename} from submitted URLs`);
+    }
+
+    // Move source file to processed folder (for file uploads)
     const possibleFolders = ['images', 'pdfs'];
     for (const folder of possibleFolders) {
         const sourcePath = path.join(UPLOADS_DIR, folder, filename);
@@ -605,6 +653,9 @@ app.listen(PORT, () => {
 ║    GET    /api/uploads          - List uploads     ║
 ║    DELETE /api/uploads/:f/:file - Delete upload    ║
 ║    POST   /api/process          - Trigger AI proc  ║
+║    POST   /api/urls             - Submit URL        ║
+║    GET    /api/urls             - List URLs         ║
+║    DELETE /api/urls/:f          - Delete URL        ║
 ║    POST   /api/process-url      - Process URL      ║
 ║    POST   /api/process/result   - n8n callback     ║
 ║    GET    /api/process/pending  - Pending reviews  ║
