@@ -386,5 +386,25 @@ function loadRatingsHistory() {
     `).join('');
 }
 
+// About modal
+function openAboutModal() {
+    document.getElementById('about-version').textContent = CONFIG.version;
+    document.getElementById('about-modal').style.display = 'flex';
+}
+
+function closeAboutModal(event) {
+    if (!event || event.target === event.currentTarget) {
+        document.getElementById('about-modal').style.display = 'none';
+    }
+}
+
 // Initialize on page load
 init();
+
+// Set footer version
+document.addEventListener('DOMContentLoaded', function() {
+    const footerVersion = document.getElementById('footer-version');
+    if (footerVersion) {
+        footerVersion.textContent = 'v' + CONFIG.version;
+    }
+});

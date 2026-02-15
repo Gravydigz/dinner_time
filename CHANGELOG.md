@@ -6,6 +6,16 @@ Version format: `YYMM.VV.P` — YearMonth.Version.Patch
 
 ---
 
+## [2602.01.2] - 2026-02-15
+
+### Added
+- **About footer and modal**: Discrete footer at bottom of main page with "About" link and version display
+  - Clicking "About" opens a modal with app description and version number
+  - Reuses existing recipe modal styling for consistent look
+  - Version populated dynamically from `CONFIG.version`
+
+---
+
 ## [2602.01.1] - 2026-02-15
 
 ### Changed

@@ -120,6 +120,26 @@
                 <div id="ratings-history"></div>
             </div>
         </div>
+        <footer class="app-footer">
+            <a href="#" onclick="openAboutModal(); return false;">About</a>
+            <span class="footer-separator">·</span>
+            <span id="footer-version"></span>
+        </footer>
+    </div>
+
+    <div id="about-modal" class="recipe-modal-overlay" style="display:none;" onclick="closeAboutModal(event)">
+        <div class="recipe-modal-content about-modal-content" onclick="event.stopPropagation()">
+            <div class="recipe-modal-header">
+                <h2>About Dinner Time</h2>
+                <div class="recipe-modal-actions">
+                    <button class="recipe-modal-icon-btn" onclick="closeAboutModal()" title="Close">✕</button>
+                </div>
+            </div>
+            <div class="about-modal-body">
+                <p>A family meal planning app with weekly recipe planning, ratings, dashboard analytics, and shopping list generation.</p>
+                <p class="about-version">Version <span id="about-version"></span></p>
+            </div>
+        </div>
     </div>
 
     <script src="assets/js/planner.js"></script>
