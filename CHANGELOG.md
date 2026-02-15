@@ -6,6 +6,19 @@ Version format: `YYMM.VV.P` — YearMonth.Version.Patch
 
 ---
 
+## [2602.01.1] - 2026-02-15
+
+### Changed
+- **Two-step URL import flow**: URL imports now follow the same submit-then-process pattern as file uploads
+  - New `POST /api/urls`, `GET /api/urls`, `DELETE /api/urls/:filename` endpoints for URL CRUD
+  - `POST /api/process-url` refactored to accept `{ filename }` and look up URL from store
+  - URLs appear in "Uploaded Recipes" list with "Process with AI" and "Delete" buttons
+  - URL entries removed automatically when n8n callback completes
+  - Error feedback shown on button instead of alert dialogs
+- Renamed "Uploaded Files" to "Uploaded Recipes" and "Process URL" to "Submit URL"
+
+---
+
 ## [2602.01.0] - 2026-02-15
 
 ### Added
