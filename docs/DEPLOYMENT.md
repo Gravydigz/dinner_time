@@ -41,14 +41,29 @@ This guide covers deploying the Dinner Time application in various environments.
    docker-compose down
    ```
 
+### Build, Tag, and Publish Docker Image
+
+From the project root directory (`dinner_time/`):
+
+```bash
+# Pull latest code
+git pull origin main
+
+# Build with version tag + latest
+docker build -t gravydigz/dinner-time:2602.00.0 -t gravydigz/dinner-time:latest -f ./docker/Dockerfile .
+
+# Push both tags to Docker Hub
+docker push gravydigz/dinner-time:2602.00.0
+docker push gravydigz/dinner-time:latest
+```
+
+Replace `2602.00.0` with the current version from `VERSION_INFO.md`. See that file for the full version format (`YYMM.VV.P`).
+
 ### Docker Commands Reference
 
 ```bash
-# Build image
-docker build -t dinner-time -f docker/Dockerfile .
-
 # Run container
-docker run -d -p 8080:80 --name dinner-time dinner-time
+docker run -d -p 3010:3000 --name dinner-time gravydigz/dinner-time:latest
 
 # View logs
 docker logs dinner-time
