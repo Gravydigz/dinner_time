@@ -2,18 +2,18 @@
 
 ## Current Version
 
-**2026.01.31.02**
+**2602.00.0**
 
 ## Version Format
 
-`YYYY.MM.DD.##`
+`YYMM.VV.P`
 
-- `YYYY` - Four-digit year
-- `MM` - Two-digit month
-- `DD` - Two-digit day
-- `##` - Daily release sequence number (01, 02, 03, etc.)
+- `YYMM` - Two-digit year + two-digit month
+- `VV` - Version/release number for that month (00, 01, 02, etc.)
+- `P` - Patch number (0, 1, 2, etc.)
 
-Example: `2026.01.31.02` = Second release on January 31, 2026
+Example: `2602.00.0` = February 2026, first version, no patches
+Example: `2602.01.2` = February 2026, second version, third patch
 
 ## Files to Update
 
@@ -21,11 +21,11 @@ When releasing a new version, update the version string in all of the following 
 
 | File | Location | Format |
 |------|----------|--------|
-| `CHANGELOG.md` | New section at top | `## [2026.01.31.02] - 2026-01-31` |
-| `server/server.js` | Line 9 | `const APP_VERSION = '2026.01.31.02';` |
-| `server/package.json` | `version` field | `"version": "2026.01.31.02"` |
-| `docker/Dockerfile` | Line 11 | `LABEL version="2026.01.31.02"` |
-| `frontend/public/assets/js/config.js` | Top of file | `const APP_VERSION = '2026.01.31.02';` |
+| `CHANGELOG.md` | New section at top | `## [2602.00.0] - 2026-02-14` |
+| `server/server.js` | Line 9 | `const APP_VERSION = '2602.00.0';` |
+| `server/package.json` | `version` field | `"version": "2602.00.0"` |
+| `docker/Dockerfile` | Line 11 | `LABEL version="2602.00.0"` |
+| `frontend/public/assets/js/config.js` | Top of file | `const APP_VERSION = '2602.00.0';` |
 
 ## Version API
 
@@ -38,7 +38,7 @@ GET /api/version
 Response:
 ```json
 {
-  "version": "2026.01.31.02"
+  "version": "2602.00.0"
 }
 ```
 
@@ -47,7 +47,7 @@ Response:
 The version is available in JavaScript via:
 
 ```javascript
-CONFIG.version  // Returns "2026.01.31.02"
+CONFIG.version  // Returns "2602.00.0"
 ```
 
 ## Docker Image Tags
@@ -55,7 +55,7 @@ CONFIG.version  // Returns "2026.01.31.02"
 When building Docker images, tag with both version and latest:
 
 ```bash
-docker build -t gravydigz/dinner-time:2026.01.31.02 -t gravydigz/dinner-time:latest -f ./docker/Dockerfile .
+docker build -t gravydigz/dinner-time:2602.00.0 -t gravydigz/dinner-time:latest -f ./docker/Dockerfile .
 ```
 
 ## Changelog

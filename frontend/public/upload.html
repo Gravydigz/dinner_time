@@ -175,6 +175,217 @@
         .back-link:hover {
             color: #764ba2;
         }
+
+        .process-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .process-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .process-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-processing {
+            background: #667eea;
+            color: white;
+        }
+
+        .pending-section {
+            margin-top: 30px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            background: #f8f9ff;
+        }
+
+        .pending-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .pending-item {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .pending-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .pending-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        .pending-meta {
+            color: #666;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+
+        .pending-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .save-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .save-btn:hover {
+            background: #218838;
+        }
+
+        .discard-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .discard-btn:hover {
+            background: #c82333;
+        }
+
+        .edit-btn {
+            background: #ffc107;
+            color: #000;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .edit-btn:hover {
+            background: #e0a800;
+        }
+
+        /* Recipe edit modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .cancel-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .cancel-btn:hover {
+            background: #5a6268;
+        }
     </style>
 </head>
 <body>
@@ -207,19 +418,90 @@
                 <div id="fileListContent"></div>
             </div>
 
+            <div class="pending-section" id="pendingSection" style="display: none;">
+                <h3>Pending Review</h3>
+                <div id="pendingList"></div>
+            </div>
+
             <div class="instructions-card">
-                <h3>📋 How to Process Uploaded Recipes</h3>
+                <h3>How to Process Uploaded Recipes</h3>
                 <ol>
                     <li><strong>Upload files:</strong> Drag and drop recipe images or PDFs above - they are saved directly to the server</li>
-                    <li><strong>Process with Claude Code:</strong>
-                        <ul style="margin-top: 10px;">
-                            <li>Open Claude Code in your terminal</li>
-                            <li>Ask: "Check the upload folder for new files"</li>
-                            <li>Claude will read the image/PDF and add it to master_recipes.json</li>
-                        </ul>
-                    </li>
+                    <li><strong>Process with AI:</strong> Click the "Process with AI" button on any uploaded file to send it to the AI for recipe extraction</li>
+                    <li><strong>Review &amp; Save:</strong> Extracted recipes appear in the "Pending Review" section for editing before saving</li>
                     <li><strong>After processing:</strong> Files are automatically moved to <code>data/uploads/processed/</code></li>
                 </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recipe Edit Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-content">
+            <h3>Edit & Save Recipe</h3>
+            <input type="hidden" id="editFilename">
+            <div class="form-group">
+                <label>Recipe Name</label>
+                <input type="text" id="editName">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="editCategory">
+                        <option value="Chicken">Chicken</option>
+                        <option value="Beef">Beef</option>
+                        <option value="Pork">Pork</option>
+                        <option value="Seafood">Seafood</option>
+                        <option value="Pasta">Pasta</option>
+                        <option value="Vegetarian">Vegetarian</option>
+                        <option value="Soup">Soup</option>
+                        <option value="Salad">Salad</option>
+                        <option value="Side">Side</option>
+                        <option value="Dessert">Dessert</option>
+                        <option value="Breakfast">Breakfast</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Servings</label>
+                    <input type="number" id="editServings" min="1">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Prep Time (min)</label>
+                    <input type="number" id="editPrepTime" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Cook Time (min)</label>
+                    <input type="number" id="editCookTime" min="0">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Source</label>
+                    <input type="text" id="editSource">
+                </div>
+                <div class="form-group">
+                    <label>URL</label>
+                    <input type="text" id="editUrl">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Ingredients (JSON array)</label>
+                <textarea id="editIngredients"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Instructions (JSON array of strings)</label>
+                <textarea id="editInstructions"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <input type="text" id="editNotes">
+            </div>
+            <div class="modal-actions">
+                <button class="cancel-btn" onclick="closeEditModal()">Cancel</button>
+                <button class="save-btn" onclick="saveEditedRecipe()">Save Recipe</button>
             </div>
         </div>
     </div>
@@ -385,7 +667,7 @@
                             </div>
                         </div>
                         <div class="file-actions">
-                            <span class="status-badge status-ready">✓ Saved</span>
+                            <button class="process-btn" onclick="processWithAI('${file.folder}', '${file.name}', this)">Process with AI</button>
                             <button class="remove-btn" onclick="deleteFile('${file.folder}', '${file.name}')">Delete</button>
                         </div>
                     </div>
@@ -413,8 +695,214 @@
             }
         }
 
+        // ============ AI Processing ============
+
+        async function processWithAI(folder, filename, btn) {
+            btn.disabled = true;
+            btn.textContent = 'Sending to AI...';
+
+            try {
+                const response = await fetch('/api/process', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ folder, filename })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    btn.textContent = 'Processing...';
+                    btn.classList.add('status-processing');
+                    // Start polling for results
+                    pollForPending();
+                } else {
+                    alert(`Processing failed: ${data.error}`);
+                    btn.disabled = false;
+                    btn.textContent = 'Process with AI';
+                }
+            } catch (error) {
+                alert(`Processing failed: ${error.message}`);
+                btn.disabled = false;
+                btn.textContent = 'Process with AI';
+            }
+        }
+
+        // Poll for pending recipes
+        let pollInterval = null;
+
+        async function pollForPending() {
+            await loadPendingRecipes();
+            // Poll every 5 seconds for a bit
+            if (!pollInterval) {
+                let pollCount = 0;
+                pollInterval = setInterval(async () => {
+                    await loadPendingRecipes();
+                    pollCount++;
+                    if (pollCount >= 60) { // Stop after 5 minutes
+                        clearInterval(pollInterval);
+                        pollInterval = null;
+                    }
+                }, 5000);
+            }
+        }
+
+        async function loadPendingRecipes() {
+            try {
+                const response = await fetch('/api/process/pending');
+                if (response.ok) {
+                    const data = await response.json();
+                    renderPendingRecipes(data.pending);
+                }
+            } catch (error) {
+                console.log('Could not load pending recipes');
+            }
+        }
+
+        function renderPendingRecipes(pending) {
+            const section = document.getElementById('pendingSection');
+            const list = document.getElementById('pendingList');
+
+            if (!pending || pending.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            list.innerHTML = pending.map(item => {
+                const r = item.recipe;
+                const ingredientCount = r.ingredients ? r.ingredients.length : 0;
+                return `
+                    <div class="pending-item">
+                        <div class="pending-header">
+                            <span class="pending-name">${r.name || 'Unnamed Recipe'}</span>
+                            <span class="status-badge status-ready">Ready for Review</span>
+                        </div>
+                        <div class="pending-meta">
+                            Category: ${r.category || 'N/A'} &bull;
+                            ${ingredientCount} ingredients &bull;
+                            Source file: ${item.filename}
+                        </div>
+                        <div class="pending-actions">
+                            <button class="edit-btn" onclick='openEditModal(${JSON.stringify(JSON.stringify(item))})'>Edit & Save</button>
+                            <button class="discard-btn" onclick="discardPending('${item.filename}')">Discard</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function discardPending(filename) {
+            if (!confirm(`Discard extracted recipe from ${filename}?`)) return;
+
+            try {
+                const response = await fetch(`/api/process/pending/${encodeURIComponent(filename)}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    await loadPendingRecipes();
+                } else {
+                    const data = await response.json();
+                    alert(`Failed: ${data.error}`);
+                }
+            } catch (error) {
+                alert(`Failed: ${error.message}`);
+            }
+        }
+
+        // ============ Edit Modal ============
+
+        function openEditModal(itemJson) {
+            const item = JSON.parse(itemJson);
+            const r = item.recipe;
+
+            document.getElementById('editFilename').value = item.filename;
+            document.getElementById('editName').value = r.name || '';
+            document.getElementById('editCategory').value = r.category || 'Other';
+            document.getElementById('editServings').value = r.servings || 4;
+            document.getElementById('editPrepTime').value = r.prepTime || 0;
+            document.getElementById('editCookTime').value = r.cookTime || 0;
+            document.getElementById('editSource').value = r.source || '';
+            document.getElementById('editUrl').value = r.url || '';
+            document.getElementById('editNotes').value = r.notes || '';
+            document.getElementById('editIngredients').value =
+                JSON.stringify(r.ingredients || [], null, 2);
+            document.getElementById('editInstructions').value =
+                JSON.stringify(r.instructions || [], null, 2);
+
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+
+        async function saveEditedRecipe() {
+            const filename = document.getElementById('editFilename').value;
+
+            let ingredients, instructions;
+            try {
+                ingredients = JSON.parse(document.getElementById('editIngredients').value);
+            } catch (e) {
+                alert('Invalid JSON in ingredients field');
+                return;
+            }
+            try {
+                instructions = JSON.parse(document.getElementById('editInstructions').value);
+            } catch (e) {
+                alert('Invalid JSON in instructions field');
+                return;
+            }
+
+            const recipe = {
+                name: document.getElementById('editName').value,
+                category: document.getElementById('editCategory').value,
+                servings: parseInt(document.getElementById('editServings').value) || 4,
+                prepTime: parseInt(document.getElementById('editPrepTime').value) || 0,
+                cookTime: parseInt(document.getElementById('editCookTime').value) || 0,
+                source: document.getElementById('editSource').value,
+                url: document.getElementById('editUrl').value,
+                notes: document.getElementById('editNotes').value,
+                ingredients,
+                instructions
+            };
+
+            try {
+                // Save recipe
+                const response = await fetch('/api/recipes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(recipe)
+                });
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    alert(`Failed to save: ${data.error}`);
+                    return;
+                }
+
+                // Remove from pending
+                await fetch(`/api/process/pending/${encodeURIComponent(filename)}`, {
+                    method: 'DELETE'
+                });
+
+                closeEditModal();
+                await loadPendingRecipes();
+                await loadUploadedFiles();
+                alert('Recipe saved successfully!');
+            } catch (error) {
+                alert(`Failed to save: ${error.message}`);
+            }
+        }
+
+        // Close modal on overlay click
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) closeEditModal();
+        });
+
         // Initial load
         loadUploadedFiles();
+        loadPendingRecipes();
     </script>
 </body>
 </html>

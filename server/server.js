@@ -6,7 +6,14 @@ const multer = require('multer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const APP_VERSION = '2026.01.31.02';
+const APP_VERSION = '2602.00.0';
+
+// n8n webhook configuration
+const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || '';
+const CALLBACK_BASE_URL = process.env.CALLBACK_BASE_URL || 'http://dinner-time-web:3000';
+
+// In-memory store for pending recipe extractions from n8n
+const pendingRecipes = new Map();
 
 // Paths to data files
 const DATA_DIR = path.join(__dirname, '..', 'data');
@@ -348,6 +355,155 @@ app.delete('/api/uploads/:folder/:filename', (req, res) => {
     }
 });
 
+// ============ Add Recipe API ============
+
+// POST add a new recipe
+app.post('/api/recipes', (req, res) => {
+    const newRecipe = req.body;
+
+    if (!newRecipe.name) {
+        return res.status(400).json({ error: 'Recipe name is required' });
+    }
+
+    const recipesFile = path.join(DATA_DIR, 'master_recipes.json');
+    const data = readJsonFile(recipesFile, { recipes: [] });
+
+    // Auto-assign next recipeId
+    const maxId = data.recipes.reduce((max, r) => Math.max(max, r.recipeId || 0), 0);
+    newRecipe.recipeId = maxId + 1;
+
+    // Generate kebab-case id from name
+    newRecipe.id = 'recipe-' + newRecipe.name
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+
+    data.recipes.push(newRecipe);
+
+    if (writeJsonFile(recipesFile, data)) {
+        res.json({ success: true, recipe: newRecipe });
+    } else {
+        res.status(500).json({ error: 'Failed to save recipe' });
+    }
+});
+
+// ============ Recipe Processing API (n8n Integration) ============
+
+// POST trigger n8n webhook to process an uploaded file
+app.post('/api/process', async (req, res) => {
+    const { folder, filename } = req.body;
+
+    if (!folder || !filename) {
+        return res.status(400).json({ error: 'folder and filename are required' });
+    }
+
+    if (!['images', 'pdfs'].includes(folder)) {
+        return res.status(400).json({ error: 'Invalid folder' });
+    }
+
+    const filePath = path.join(UPLOADS_DIR, folder, filename);
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ error: 'File not found' });
+    }
+
+    if (!N8N_WEBHOOK_URL) {
+        return res.status(503).json({ error: 'N8N_WEBHOOK_URL not configured' });
+    }
+
+    // Determine mime type from extension
+    const ext = path.extname(filename).toLowerCase();
+    const mimeTypes = {
+        '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+        '.png': 'image/png', '.gif': 'image/gif',
+        '.webp': 'image/webp', '.pdf': 'application/pdf'
+    };
+    const mimeType = mimeTypes[ext] || 'application/octet-stream';
+
+    // Build URLs using the configured base URL
+    const callbackUrl = `${CALLBACK_BASE_URL}/api/process/result`;
+    const fileUrl = `${CALLBACK_BASE_URL}/data/uploads/${folder}/${filename}`;
+
+    const payload = {
+        filename,
+        fileUrl,
+        mimeType,
+        callbackUrl
+    };
+
+    try {
+        const response = await fetch(N8N_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            throw new Error(`n8n responded with status ${response.status}`);
+        }
+
+        console.log(`Processing triggered for ${filename} via n8n webhook`);
+        res.json({ success: true, message: 'Processing started' });
+    } catch (error) {
+        console.error('Failed to trigger n8n webhook:', error.message);
+        res.status(502).json({ error: `Failed to reach n8n: ${error.message}` });
+    }
+});
+
+// POST receive processed recipe from n8n callback
+app.post('/api/process/result', (req, res) => {
+    const { filename, recipe } = req.body;
+
+    if (!filename || !recipe) {
+        return res.status(400).json({ error: 'filename and recipe are required' });
+    }
+
+    // Store as pending review
+    pendingRecipes.set(filename, {
+        filename,
+        recipe,
+        receivedAt: new Date().toISOString()
+    });
+
+    // Move source file to processed folder
+    const possibleFolders = ['images', 'pdfs'];
+    for (const folder of possibleFolders) {
+        const sourcePath = path.join(UPLOADS_DIR, folder, filename);
+        if (fs.existsSync(sourcePath)) {
+            const destPath = path.join(UPLOADS_DIR, 'processed', filename);
+            try {
+                fs.renameSync(sourcePath, destPath);
+                console.log(`Moved ${filename} to processed/`);
+            } catch (err) {
+                console.error(`Failed to move ${filename}:`, err.message);
+            }
+            break;
+        }
+    }
+
+    console.log(`Received processed recipe for ${filename}`);
+    res.json({ success: true, message: 'Recipe received for review' });
+});
+
+// GET all pending recipes awaiting review
+app.get('/api/process/pending', (req, res) => {
+    const pending = Array.from(pendingRecipes.values());
+    res.json({ pending });
+});
+
+// DELETE discard a pending recipe
+app.delete('/api/process/pending/:filename', (req, res) => {
+    const { filename } = req.params;
+
+    if (!pendingRecipes.has(filename)) {
+        return res.status(404).json({ error: 'No pending recipe found for this filename' });
+    }
+
+    pendingRecipes.delete(filename);
+    res.json({ success: true, message: 'Pending recipe discarded' });
+});
+
 // Error handling for multer
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
@@ -369,25 +525,33 @@ app.get('*', (req, res) => {
 // Start server
 app.listen(PORT, () => {
     console.log(`
-╔════════════════════════════════════════════════╗
-║           Dinner Time Server                   ║
-║            Version ${APP_VERSION}               ║
-║────────────────────────────────────────────────║
-║  Server running at http://localhost:${PORT}       ║
-║                                                ║
-║  API Endpoints:                                ║
-║    GET  /api/version     - Get app version     ║
-║    GET  /api/plans       - Get weekly plans    ║
-║    POST /api/plans       - Save weekly plans   ║
-║    GET  /api/ratings     - Get all ratings     ║
-║    POST /api/ratings     - Save all ratings    ║
-║    POST /api/ratings/add - Add one rating      ║
-║    GET  /api/recipes     - Get all recipes     ║
-║    PUT  /api/recipes/:id - Update a recipe     ║
-║    POST /api/upload      - Upload single file  ║
-║    POST /api/upload/multiple - Upload multiple ║
-║    GET  /api/uploads     - List uploaded files ║
-║    DELETE /api/uploads/:folder/:file - Delete  ║
-╚════════════════════════════════════════════════╝
+╔════════════════════════════════════════════════════╗
+║           Dinner Time Server                       ║
+║            Version ${APP_VERSION}                   ║
+║────────────────────────────────────────────────────║
+║  Server running at http://localhost:${PORT}           ║
+║                                                    ║
+║  API Endpoints:                                    ║
+║    GET    /api/version          - Get app version  ║
+║    GET    /api/plans            - Get weekly plans  ║
+║    POST   /api/plans            - Save weekly plans ║
+║    GET    /api/ratings          - Get all ratings   ║
+║    POST   /api/ratings          - Save all ratings  ║
+║    POST   /api/ratings/add      - Add one rating   ║
+║    GET    /api/recipes          - Get all recipes   ║
+║    POST   /api/recipes          - Add new recipe   ║
+║    PUT    /api/recipes/:id      - Update a recipe  ║
+║    POST   /api/upload           - Upload file      ║
+║    POST   /api/upload/multiple  - Upload multiple  ║
+║    GET    /api/uploads          - List uploads     ║
+║    DELETE /api/uploads/:f/:file - Delete upload    ║
+║    POST   /api/process          - Trigger AI proc  ║
+║    POST   /api/process/result   - n8n callback     ║
+║    GET    /api/process/pending  - Pending reviews  ║
+║    DELETE /api/process/pending/:f - Discard pending║
+║                                                    ║
+║  n8n Webhook:  ${N8N_WEBHOOK_URL || '(not configured)'}
+║  Callback URL: ${CALLBACK_BASE_URL}
+╚════════════════════════════════════════════════════╝
     `);
 });

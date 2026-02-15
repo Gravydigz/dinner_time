@@ -2,7 +2,29 @@
 
 All notable changes to Dinner Time are documented in this file.
 
-Version format: `YYYY.MM.DD.##` where `##` is the release number for that day.
+Version format: `YYMM.VV.P` — YearMonth.Version.Patch
+
+---
+
+## [2602.00.0] - 2026-02-14
+
+### Added
+- **n8n + Ollama Recipe Processing Integration**: Automated recipe extraction from uploaded images/PDFs
+  - `POST /api/process` - Triggers n8n webhook to process an uploaded file
+  - `POST /api/process/result` - Receives extracted recipe JSON from n8n callback
+  - `GET /api/process/pending` - Lists recipes awaiting user review
+  - `DELETE /api/process/pending/:filename` - Discards a pending recipe
+  - `POST /api/recipes` - Adds a new recipe with auto-assigned ID
+  - "Process with AI" button on uploaded files in upload page
+  - Pending review section with edit modal for reviewing extracted recipes
+  - `N8N_WEBHOOK_URL` and `CALLBACK_BASE_URL` environment variables
+  - `docker/.env` file for environment configuration
+  - `docs/N8N_RECIPE_PROCESSING.md` - Full setup guide for n8n workflow
+
+### Changed
+- Version format changed from `YYYY.MM.DD.##` to `YYMM.VV.P` (YearMonth.Version.Patch)
+- Upload page instructions updated to reflect AI processing workflow
+- `docker-compose.yml` and `docker-compose.generic` updated with new environment variables
 
 ---
 
