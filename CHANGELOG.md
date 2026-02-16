@@ -6,6 +6,15 @@ Version format: `YYMM.VV.P` — YearMonth.Version.Patch
 
 ---
 
+## [2602.02.0] - 2026-02-15
+
+### Fixed
+- **About modal**: Added missing `config.js` script to `index.html` so the About link opens the modal instead of reloading the page
+- **Process with AI button**: Button no longer resets to default state during polling; stays disabled with "Processing..." text until the recipe is extracted
+- **Edit & Save modal**: Fixed double-stringify bug that prevented recipe fields from populating in the edit modal
+
+---
+
 ## [2602.01.2] - 2026-02-15
 
 ### Added

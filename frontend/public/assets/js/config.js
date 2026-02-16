@@ -2,7 +2,7 @@
 // In development: relative paths work with file://
 // In production (Docker): served by nginx, paths relative to root
 
-const APP_VERSION = '2602.01.2';
+const APP_VERSION = '2602.02.0';
 
 const CONFIG = {
     // App version

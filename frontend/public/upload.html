@@ -568,6 +568,8 @@
         const fileList = document.getElementById('fileList');
         const fileListContent = document.getElementById('fileListContent');
         let uploadedFiles = [];
+        const processingFiles = new Set();
+        let pendingItems = [];
 
         // Load uploaded files and submitted URLs from server
         async function loadUploadedFiles() {
@@ -748,7 +750,10 @@
                             </div>
                         </div>
                         <div class="file-actions">
-                            <button class="process-btn" onclick="processWithAI('${file.folder}', '${file.name}', this)">Process with AI</button>
+                            ${processingFiles.has(file.name)
+                                ? `<button class="process-btn status-processing" disabled>Processing...</button>`
+                                : `<button class="process-btn" onclick="processWithAI('${file.folder}', '${file.name}', this)">Process with AI</button>`
+                            }
                             <button class="remove-btn" onclick="deleteFile('${file.folder}', '${file.name}')">Delete</button>
                         </div>
                     </div>
@@ -859,6 +864,7 @@
                 if (response.ok) {
                     btn.textContent = 'Processing...';
                     btn.classList.add('status-processing');
+                    processingFiles.add(filename);
                     // Start polling for results
                     pollForPending();
                 } else {
@@ -899,6 +905,9 @@
                 const response = await fetch('/api/process/pending');
                 if (response.ok) {
                     const data = await response.json();
+                    if (data.pending) {
+                        data.pending.forEach(item => processingFiles.delete(item.filename));
+                    }
                     renderPendingRecipes(data.pending);
                 }
             } catch (error) {
@@ -915,8 +924,9 @@
                 return;
             }
 
+            pendingItems = pending;
             section.style.display = 'block';
-            list.innerHTML = pending.map(item => {
+            list.innerHTML = pending.map((item, index) => {
                 const r = item.recipe;
                 const ingredientCount = r.ingredients ? r.ingredients.length : 0;
                 return `
@@ -931,7 +941,7 @@
                             Source file: ${item.filename}
                         </div>
                         <div class="pending-actions">
-                            <button class="edit-btn" onclick='openEditModal(${JSON.stringify(JSON.stringify(item))})'>Edit & Save</button>
+                            <button class="edit-btn" onclick="openEditModal(${index})">Edit & Save</button>
                             <button class="discard-btn" onclick="discardPending('${item.filename}')">Discard</button>
                         </div>
                     </div>
@@ -960,8 +970,8 @@
 
         // ============ Edit Modal ============
 
-        function openEditModal(itemJson) {
-            const item = JSON.parse(itemJson);
+        function openEditModal(index) {
+            const item = pendingItems[index];
             const r = item.recipe;
 
             document.getElementById('editFilename').value = item.filename;

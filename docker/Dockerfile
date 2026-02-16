@@ -1,6 +1,6 @@
 # Node.js server for Dinner Time application
 # Build out of root directory dinner_time
-# docker build -t gravydigz/dinner-time:2602.01.2 -t gravydigz/dinner-time:latest -f ./docker/Dockerfile .
+# docker build -t gravydigz/dinner-time:2602.02.0 -t gravydigz/dinner-time:latest -f ./docker/Dockerfile .
 
 # Source
 FROM node:18-alpine
@@ -8,7 +8,7 @@ FROM node:18-alpine
 # Metadata
 LABEL maintainer="Travis Robertson"
 LABEL description="Dinner Time - Recipe Planning and Rating System"
-LABEL version="2602.01.2"
+LABEL version="2602.02.0"
 
 # Create app directory
 WORKDIR /app
