@@ -14,6 +14,16 @@ Version format: `YYMM.VV.P` — YearMonth.Version.Patch
   - Reuses existing recipe modal styling for consistent look
   - Version populated dynamically from `CONFIG.version`
 
+### Changed
+- **n8n Clean HTML node**: Two-tier extraction — tries JSON-LD structured data first, falls back to text stripping
+  - JSON-LD extracts `@type: Recipe` from `<script type="application/ld+json">` blocks (including `@graph` arrays)
+  - Text fallback truncation increased from 8,000 to 12,000 characters
+  - Output is JSON-escaped to prevent `NodeOperationError` in downstream HTTP Request node
+  - New `extractionMethod` output field (`json-ld` or `text`) for debugging
+- **n8n Ollama Text prompt**: Changed from "webpage text" to "recipe data" to better describe JSON-LD input
+- **n8n docs**: Updated test curl example to use `filename` param, added JSON-LD troubleshooting entry
+- Removed implemented "About" popup from README future ideas section
+
 ---
 
 ## [2602.01.1] - 2026-02-15

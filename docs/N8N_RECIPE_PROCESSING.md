@@ -135,35 +135,71 @@ This receives one of two payload formats:
 - **Code:**
 ```javascript
 const html = $input.first().json.data || $input.first().json.body || '';
-
-// Strip non-content tags
-let text = html
-  .replace(/<script[\s\S]*?<\/script>/gi, '')
-  .replace(/<style[\s\S]*?<\/style>/gi, '')
-  .replace(/<nav[\s\S]*?<\/nav>/gi, '')
-  .replace(/<footer[\s\S]*?<\/footer>/gi, '')
-  .replace(/<header[\s\S]*?<\/header>/gi, '');
-
-// Strip remaining HTML tags
-text = text.replace(/<[^>]+>/g, ' ');
-
-// Decode common HTML entities
-text = text
-  .replace(/&amp;/g, '&')
-  .replace(/&lt;/g, '<')
-  .replace(/&gt;/g, '>')
-  .replace(/&quot;/g, '"')
-  .replace(/&#39;/g, "'")
-  .replace(/&nbsp;/g, ' ');
-
-// Collapse whitespace and truncate
-text = text.replace(/\s+/g, ' ').trim().substring(0, 8000);
-
 const webhook = $('Webhook').first().json.body;
+
+let text = '';
+let extractionMethod = 'text';
+
+// --- Tier 1: Try JSON-LD structured data ---
+const ldJsonBlocks = html.match(/<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+
+if (ldJsonBlocks) {
+  for (const block of ldJsonBlocks) {
+    try {
+      const jsonContent = block.replace(/<script[^>]*>/i, '').replace(/<\/script>/i, '').trim();
+      const parsed = JSON.parse(jsonContent);
+
+      // Check for direct Recipe type
+      if (parsed['@type'] === 'Recipe') {
+        text = JSON.stringify(parsed);
+        extractionMethod = 'json-ld';
+        break;
+      }
+
+      // Check inside @graph array
+      if (parsed['@graph'] && Array.isArray(parsed['@graph'])) {
+        const recipe = parsed['@graph'].find(item => item['@type'] === 'Recipe');
+        if (recipe) {
+          text = JSON.stringify(recipe);
+          extractionMethod = 'json-ld';
+          break;
+        }
+      }
+    } catch (e) {
+      // Invalid JSON-LD block, skip
+    }
+  }
+}
+
+// --- Tier 2: Fall back to text extraction ---
+if (!text) {
+  text = html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<nav[\s\S]*?<\/nav>/gi, '')
+    .replace(/<footer[\s\S]*?<\/footer>/gi, '')
+    .replace(/<header[\s\S]*?<\/header>/gi, '');
+
+  text = text.replace(/<[^>]+>/g, ' ');
+
+  text = text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ');
+
+  text = text.replace(/\s+/g, ' ').trim().substring(0, 12000);
+}
+
+// JSON-escape the output to prevent NodeOperationError in the HTTP Request node
+const safeText = JSON.stringify(text).slice(1, -1);
 
 return {
   json: {
-    cleanedText: text,
+    cleanedText: safeText,
+    extractionMethod: extractionMethod,
     webhook: webhook
   }
 };
@@ -181,7 +217,7 @@ return {
   "messages": [
     {
       "role": "user",
-      "content": "Extract the recipe from the following webpage text into structured JSON with these fields: name (string), source (string), url (string, empty if unknown), prepTime (number in minutes), cookTime (number in minutes), servings (number), category (one of: Chicken, Beef, Pork, Seafood, Pasta, Vegetarian, Soup, Salad, Side, Dessert, Breakfast, Other), ingredients (array of objects with item, amount, unit, additional fields), instructions (array of step strings), notes (string). Return ONLY valid JSON, no markdown or explanation.\n\nWebpage text:\n{{ $json.cleanedText }}"
+      "content": "Extract the recipe from the following data into structured JSON with these fields: name (string), source (string), url (string, empty if unknown), prepTime (number in minutes), cookTime (number in minutes), servings (number), category (one of: Chicken, Beef, Pork, Seafood, Pasta, Vegetarian, Soup, Salad, Side, Dessert, Breakfast, Other), ingredients (array of objects with item, amount, unit, additional fields), instructions (array of step strings), notes (string). Return ONLY valid JSON, no markdown or explanation.\n\nRecipe data:\n{{ $json.cleanedText }}"
     }
   ],
   "stream": false,
@@ -339,8 +375,10 @@ Both the URL path (Ollama Text) and file path (Ollama Vision) connect their outp
 ```bash
 curl -X POST http://localhost:3010/api/process-url \
   -H "Content-Type: application/json" \
-  -d '{"url":"https://www.allrecipes.com/recipe/bourbon-glazed-steak/"}'
+  -d '{"filename":"url-bourbon-glazed-steak-1739123456789"}'
 ```
+
+**Note:** The `filename` refers to a previously submitted URL import stored in `data/uploads/urls/`. Submit the URL via the app first (which creates the file), then call process-url with the filename.
 
 ### Test the callback independently (skip n8n):
 ```bash
@@ -391,7 +429,8 @@ docker exec n8n wget -qO- --timeout=5 https://dt.gravydigz.net/api/uploads
 | `$binary.data.base64` is undefined | n8n version does not expose base64 directly — use the Code (Base64) node with `this.helpers.getBinaryDataBuffer()` instead |
 | URL import returns empty/bad recipe | Site may use JavaScript rendering (SPA) — the fetch gets raw HTML only. Try a different URL or use file upload with a screenshot instead |
 | URL fetch blocked (403/captcha) | Site has anti-scraping protection — the User-Agent header helps but some sites block non-browser requests. Use file upload as fallback |
-| URL response is too large / truncated | The Clean HTML node truncates to ~8000 chars. For very long pages, the recipe content may be cut off — ensure key recipe content is near the top of the page |
+| URL response is too large / truncated | The Clean HTML node truncates text fallback to ~12000 chars. For very long pages, the recipe content may be cut off — ensure key recipe content is near the top of the page |
+| JSON-LD extraction used wrong data | Check the n8n execution log — the Clean HTML node outputs `extractionMethod` (`json-ld` or `text`). If JSON-LD was used but recipe data looks wrong, the site may have malformed structured data. Delete the `if (ldJsonBlocks)` block to force text fallback |
 | IF node routes to wrong branch | Verify the condition checks `$json.body.recipeUrl` — file uploads don't include this field, URL imports always do |
 
 ### Docker Networking Notes
