@@ -300,29 +300,9 @@ The system is designed to grow:
 
 ## Future Enhancements
 
-### Implemented ✓
-- ✓ Save and load weekly meal plans by ISO week
-- ✓ Plan history viewer with reload capability
-- ✓ Sequential recipe IDs for database compatibility
-- ✓ Docker containerization
-- ✓ Shopping list with category organization
-- ✓ Node.js backend API for data persistence
-- ✓ Server-side storage for ratings and plans
-- ✓ Direct file upload for recipe images/PDFs
-- ✓ Modal overlays for recipes and shopping list
-- ✓ Print functionality without new windows
-- ✓ Current week / Next week planning tabs
-- ✓ View and print icons on recipe cards
-- ✓ Family members loaded from members.json
-
 ### Planned
 
-**AI Recipe Processing**
-- PDF recipe processing via n8n + Ollama (extract recipes from uploaded PDF files)
-- URL-based recipe import (paste a recipe URL to automatically extract and add the recipe)
-
 **Categories & Meal Planning**
-- Add "Side" as a standard recipe category and ensure it persists through AI processing
 - Category validation in AI processing to prevent category changes during review
 - Meal composition planning — pick a main dish and pair it with sides for a complete meal
 
@@ -345,6 +325,39 @@ The system is designed to grow:
 - Database integration (PostgreSQL/MongoDB)
 - Multi-device sync
 - User authentication
+
+### Implemented ✓
+
+**v2602.01.2**
+- ✓ About footer and modal with version display
+
+**v2602.01.0**
+- ✓ URL-based recipe import (paste a URL to automatically extract and add a recipe)
+
+**v2602.00.0**
+- ✓ PDF recipe processing via n8n + Ollama (AI extraction from uploaded images/PDFs)
+- ✓ "Side" as a standard recipe category (recognized in AI processing prompts)
+
+**v2601.00.1**
+- ✓ Edit recipe feature — pencil icon on cards, full edit modal with ingredient/instruction editing
+- ✓ Notes field on recipes (displayed in view modal, editable in edit modal)
+
+**v2601.00.0**
+- ✓ Family members loaded dynamically from members.json
+
+**Pre-release**
+- ✓ Weekly recipe planner with ISO week support
+- ✓ Plan history viewer with reload capability
+- ✓ Sequential recipe IDs for database compatibility
+- ✓ Docker containerization
+- ✓ Shopping list with category organization
+- ✓ Node.js backend API for data persistence
+- ✓ Server-side storage for ratings and plans
+- ✓ Direct file upload for recipe images/PDFs
+- ✓ Modal overlays for recipes and shopping list
+- ✓ Print functionality without new windows
+- ✓ Current week / Next week planning tabs
+- ✓ View and print icons on recipe cards
 
 ## Family Members
 

@@ -6,6 +6,19 @@ Version format: `YYMM.VV.P` — YearMonth.Version.Patch
 
 ---
 
+## [2602.03.0] - 2026-02-18
+
+### Fixed
+- **URL import — original URL always preserved**: Server now injects the original submitted URL into the recipe at callback time, guaranteeing it is saved to `recipe.url` regardless of what Ollama extracted from the page
+
+### Changed
+- **Recipe categories — single source of truth**: `CONFIG.categories` in `config.js` is now the authoritative list of recipe categories; `upload.html` and `planner.js` both reference it instead of maintaining separate hardcoded lists
+- **Full category list in planner edit modal**: Recipe edit modal in the main planner now shows all 12 categories (Chicken, Beef, Pork, Seafood, Pasta, Vegetarian, Soup, Salad, Side, Dessert, Breakfast, Other) — previously only showed 6
+- **n8n Parse Response node**: Updated to always assign `webhook.recipeUrl` when present, rather than using it only as a fallback when Ollama didn't extract a URL
+- **README Future Enhancements**: Moved implemented items (PDF processing, URL import, Side category) out of Planned; added version groupings to Implemented list; Planned now appears before Implemented; added missing entries for edit recipe feature, notes field, and About modal
+
+---
+
 ## [2602.02.0] - 2026-02-15
 
 ### Fixed

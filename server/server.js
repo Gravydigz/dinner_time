@@ -6,7 +6,7 @@ const multer = require('multer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const APP_VERSION = '2602.02.0';
+const APP_VERSION = '2602.03.0';
 
 // n8n webhook configuration
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || '';
@@ -560,6 +560,12 @@ app.post('/api/process/result', (req, res) => {
         return res.status(400).json({ error: 'filename and recipe are required' });
     }
 
+    // If this was a URL import, always preserve the original submitted URL
+    const urlEntry = submittedUrls.get(filename);
+    if (urlEntry) {
+        recipe.url = urlEntry.url;
+    }
+
     // Store as pending review
     pendingRecipes.set(filename, {
         filename,
@@ -568,7 +574,7 @@ app.post('/api/process/result', (req, res) => {
     });
 
     // Remove from submitted URLs if it was a URL entry
-    if (submittedUrls.has(filename)) {
+    if (urlEntry) {
         submittedUrls.delete(filename);
         console.log(`Removed URL entry ${filename} from submitted URLs`);
     }

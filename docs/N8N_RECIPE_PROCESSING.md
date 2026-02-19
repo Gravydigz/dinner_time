@@ -318,8 +318,8 @@ try {
 
 const webhook = $('Webhook').first().json.body;
 
-// Auto-populate recipe URL from webhook if not extracted by Ollama
-if (webhook.recipeUrl && !recipe.url) {
+// Always use the original submitted URL for URL imports (overrides any Ollama-extracted url)
+if (webhook.recipeUrl) {
   recipe.url = webhook.recipeUrl;
 }
 

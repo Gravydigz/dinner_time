@@ -503,20 +503,7 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>Category</label>
-                    <select id="editCategory">
-                        <option value="Chicken">Chicken</option>
-                        <option value="Beef">Beef</option>
-                        <option value="Pork">Pork</option>
-                        <option value="Seafood">Seafood</option>
-                        <option value="Pasta">Pasta</option>
-                        <option value="Vegetarian">Vegetarian</option>
-                        <option value="Soup">Soup</option>
-                        <option value="Salad">Salad</option>
-                        <option value="Side">Side</option>
-                        <option value="Dessert">Dessert</option>
-                        <option value="Breakfast">Breakfast</option>
-                        <option value="Other">Other</option>
-                    </select>
+                    <select id="editCategory"></select>
                 </div>
                 <div class="form-group">
                     <label>Servings</label>
@@ -562,7 +549,12 @@
         </div>
     </div>
 
+    <script src="assets/js/config.js"></script>
     <script>
+        // Populate category dropdown from shared CONFIG
+        document.getElementById('editCategory').innerHTML =
+            CONFIG.categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+
         const uploadZone = document.getElementById('uploadZone');
         const fileInput = document.getElementById('fileInput');
         const fileList = document.getElementById('fileList');

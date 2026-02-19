@@ -380,8 +380,7 @@ function editRecipe(recipeId) {
     }
 
     // Category options
-    const categories = ['Beef', 'Chicken', 'Pasta', 'Seafood', 'Vegetarian', 'Other'];
-    const categoryOptions = categories.map(cat =>
+    const categoryOptions = CONFIG.categories.map(cat =>
         `<option value="${cat}" ${recipe.category === cat ? 'selected' : ''}>${cat}</option>`
     ).join('');
 
