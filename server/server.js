@@ -6,7 +6,7 @@ const multer = require('multer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const APP_VERSION = '2602.03.0';
+const APP_VERSION = '2602.04.0';
 
 // n8n webhook configuration
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || '';
@@ -17,6 +17,9 @@ const pendingRecipes = new Map();
 
 // In-memory store for submitted URLs awaiting processing
 const submittedUrls = new Map();
+
+// In-memory store for submitted raw text awaiting processing
+const submittedTexts = new Map();
 
 // Paths to data files
 const DATA_DIR = path.join(__dirname, '..', 'data');
@@ -552,6 +555,86 @@ app.post('/api/process-url', async (req, res) => {
     }
 });
 
+// ============ Text Submission API ============
+
+// POST submit raw recipe text for later processing
+app.post('/api/texts', (req, res) => {
+    const { text } = req.body;
+
+    if (!text || !text.trim()) {
+        return res.status(400).json({ error: 'text is required' });
+    }
+
+    const filename = `text-${Date.now()}`;
+    const preview = text.trim().substring(0, 80).replace(/\s+/g, ' ');
+    const entry = { filename, text: text.trim(), preview, submittedAt: new Date().toISOString() };
+    submittedTexts.set(filename, entry);
+
+    console.log(`Text submitted: "${preview}..." (${filename})`);
+    res.json({ success: true, entry });
+});
+
+// GET list all submitted texts
+app.get('/api/texts', (req, res) => {
+    res.json({ texts: Array.from(submittedTexts.values()) });
+});
+
+// DELETE remove a submitted text
+app.delete('/api/texts/:filename', (req, res) => {
+    const { filename } = req.params;
+
+    if (!submittedTexts.has(filename)) {
+        return res.status(404).json({ error: 'Text entry not found' });
+    }
+
+    submittedTexts.delete(filename);
+    res.json({ success: true, message: 'Text entry removed' });
+});
+
+// POST trigger n8n webhook to process submitted text
+app.post('/api/process-text', async (req, res) => {
+    const { filename } = req.body;
+
+    if (!filename) {
+        return res.status(400).json({ error: 'filename is required' });
+    }
+
+    const entry = submittedTexts.get(filename);
+    if (!entry) {
+        return res.status(404).json({ error: 'Text entry not found' });
+    }
+
+    if (!N8N_WEBHOOK_URL) {
+        return res.status(503).json({ error: 'N8N_WEBHOOK_URL not configured' });
+    }
+
+    const callbackUrl = `${CALLBACK_BASE_URL}/api/process/result`;
+
+    const payload = {
+        recipeText: entry.text,
+        filename,
+        callbackUrl
+    };
+
+    try {
+        const response = await fetch(N8N_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            throw new Error(`n8n responded with status ${response.status}`);
+        }
+
+        console.log(`Text processing triggered for "${entry.preview}..." via n8n webhook (${filename})`);
+        res.json({ success: true, message: 'Text processing started', filename });
+    } catch (error) {
+        console.error('Failed to trigger n8n webhook:', error.message);
+        res.status(502).json({ error: `Failed to reach n8n: ${error.message}` });
+    }
+});
+
 // POST receive processed recipe from n8n callback
 app.post('/api/process/result', (req, res) => {
     const { filename, recipe } = req.body;
@@ -577,6 +660,13 @@ app.post('/api/process/result', (req, res) => {
     if (urlEntry) {
         submittedUrls.delete(filename);
         console.log(`Removed URL entry ${filename} from submitted URLs`);
+    }
+
+    // Remove from submitted texts if it was a text entry
+    const textEntry = submittedTexts.get(filename);
+    if (textEntry) {
+        submittedTexts.delete(filename);
+        console.log(`Removed text entry ${filename} from submitted texts`);
     }
 
     // Move source file to processed folder (for file uploads)
@@ -662,7 +752,11 @@ app.listen(PORT, () => {
 ║    POST   /api/urls             - Submit URL        ║
 ║    GET    /api/urls             - List URLs         ║
 ║    DELETE /api/urls/:f          - Delete URL        ║
-║    POST   /api/process-url      - Process URL      ║
+║    POST   /api/process-url      - Process URL       ║
+║    POST   /api/texts            - Submit text       ║
+║    GET    /api/texts            - List texts        ║
+║    DELETE /api/texts/:f         - Delete text       ║
+║    POST   /api/process-text     - Process text      ║
 ║    POST   /api/process/result   - n8n callback     ║
 ║    GET    /api/process/pending  - Pending reviews  ║
 ║    DELETE /api/process/pending/:f - Discard pending║

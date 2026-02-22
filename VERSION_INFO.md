@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**2602.03.0**
+**2602.04.0**
 
 ## Version Format
 

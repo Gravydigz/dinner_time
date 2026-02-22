@@ -432,6 +432,52 @@
         .url-status.success {
             color: #28a745;
         }
+
+        .text-import-section {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .text-import-section h3 {
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .text-import-section textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px 14px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            resize: vertical;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        .text-import-section textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .text-status {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #666;
+            min-height: 1.2em;
+        }
+
+        .text-status.error {
+            color: #dc3545;
+        }
+
+        .text-status.success {
+            color: #28a745;
+        }
     </style>
 </head>
 <body>
@@ -468,6 +514,15 @@
                 <div class="url-status" id="urlStatus"></div>
             </div>
 
+            <div class="text-import-section">
+                <h3>Paste Recipe Text</h3>
+                <textarea id="textInput" placeholder="Type or paste recipe text here (ingredients, instructions, etc.)..."></textarea>
+                <div style="display: flex; justify-content: flex-end;">
+                    <button class="process-btn" id="textSubmitBtn" onclick="submitText()">Submit Text</button>
+                </div>
+                <div class="text-status" id="textStatus"></div>
+            </div>
+
             <div class="file-list" id="fileList" style="display: none;">
                 <h3>Uploaded Recipes</h3>
                 <div id="fileListContent"></div>
@@ -483,7 +538,8 @@
                 <ol>
                     <li><strong>Upload files:</strong> Drag and drop recipe images or PDFs above - they are saved directly to the server</li>
                     <li><strong>Import from URL:</strong> Paste a recipe URL to extract the recipe directly from the webpage</li>
-                    <li><strong>Process with AI:</strong> Click the "Process with AI" button on any uploaded file to send it to the AI for recipe extraction</li>
+                    <li><strong>Paste text:</strong> Type or paste raw recipe text (from a book, card, or any source) and submit it for AI extraction</li>
+                    <li><strong>Process with AI:</strong> Click the "Process with AI" button on any uploaded item to send it to the AI for recipe extraction</li>
                     <li><strong>Review &amp; Save:</strong> Extracted recipes appear in the "Pending Review" section for editing before saving</li>
                     <li><strong>After processing:</strong> Files are automatically moved to <code>data/uploads/processed/</code></li>
                 </ol>
@@ -563,12 +619,13 @@
         const processingFiles = new Set();
         let pendingItems = [];
 
-        // Load uploaded files and submitted URLs from server
+        // Load uploaded files, submitted URLs, and submitted texts from server
         async function loadUploadedFiles() {
             try {
-                const [uploadsRes, urlsRes] = await Promise.all([
+                const [uploadsRes, urlsRes, textsRes] = await Promise.all([
                     fetch('/api/uploads'),
-                    fetch('/api/urls')
+                    fetch('/api/urls'),
+                    fetch('/api/texts')
                 ]);
 
                 const files = [];
@@ -590,6 +647,19 @@
                             uploaded: u.submittedAt,
                             type: 'url',
                             folder: 'urls'
+                        }))
+                    );
+                }
+
+                if (textsRes.ok) {
+                    const data = await textsRes.json();
+                    files.push(
+                        ...data.texts.map(t => ({
+                            name: t.filename,
+                            preview: t.preview,
+                            uploaded: t.submittedAt,
+                            type: 'text',
+                            folder: 'texts'
                         }))
                     );
                 }
@@ -726,9 +796,11 @@
                 }
 
                 const uploadDate = new Date(file.uploaded).toLocaleString();
-                const icon = file.type === 'url' ? '🔗' : file.type === 'pdf' ? '📄' : '🖼️';
+                const icon = file.type === 'url' ? '🔗' : file.type === 'text' ? '📝' : file.type === 'pdf' ? '📄' : '🖼️';
                 const metaLine = file.type === 'url'
                     ? `<a href="${file.url}" target="_blank" rel="noopener">${file.url}</a> • Submitted ${uploadDate}`
+                    : file.type === 'text'
+                    ? `"${file.preview}..." • Submitted ${uploadDate}`
                     : `${formatFileSize(file.size)} • Uploaded ${uploadDate}<br>📁 <code>${file.path}</code>`;
 
                 return `
@@ -758,7 +830,9 @@
             if (!confirm(`Delete ${filename}?`)) return;
 
             try {
-                const url = folder === 'urls'
+                const url = folder === 'texts'
+                    ? `/api/texts/${encodeURIComponent(filename)}`
+                    : folder === 'urls'
                     ? `/api/urls/${encodeURIComponent(filename)}`
                     : `/api/uploads/${folder}/${filename}`;
 
@@ -829,6 +903,52 @@
             }
         }
 
+        // ============ Text Submission ============
+
+        async function submitText() {
+            const textInput = document.getElementById('textInput');
+            const btn = document.getElementById('textSubmitBtn');
+            const status = document.getElementById('textStatus');
+            const text = textInput.value.trim();
+
+            if (!text) {
+                status.textContent = 'Please enter some recipe text.';
+                status.className = 'text-status error';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+            status.textContent = '';
+            status.className = 'text-status';
+
+            try {
+                const response = await fetch('/api/texts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    status.textContent = 'Text saved! Click "Process with AI" to extract the recipe.';
+                    status.className = 'text-status success';
+                    textInput.value = '';
+                    await loadUploadedFiles();
+                } else {
+                    status.textContent = `Failed: ${data.error}`;
+                    status.className = 'text-status error';
+                }
+            } catch (error) {
+                status.textContent = `Failed: ${error.message}`;
+                status.className = 'text-status error';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Submit Text';
+            }
+        }
+
         // ============ AI Processing ============
 
         async function processWithAI(folder, filename, btn) {
@@ -837,7 +957,13 @@
 
             try {
                 let response;
-                if (folder === 'urls') {
+                if (folder === 'texts') {
+                    response = await fetch('/api/process-text', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ filename })
+                    });
+                } else if (folder === 'urls') {
                     response = await fetch('/api/process-url', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },

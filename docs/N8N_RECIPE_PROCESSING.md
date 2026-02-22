@@ -4,28 +4,30 @@ This guide covers setting up the automated recipe extraction pipeline: upload a 
 
 ## Architecture
 
-The workflow supports two input paths — file uploads and URL imports — that converge at the same parse and callback steps.
+The workflow supports three input paths — file uploads, URL imports, and raw text — that converge at the same parse and callback steps.
 
 ```
                                     Webhook
                                        │
-                              ┌── IF recipeUrl? ──┐
-                              │                    │
-                         [URL path]          [File path]
-                              │                    │
-                      Fetch URL (GET)     Fetch File (GET)
-                              │                    │
-                      Clean HTML (Code)   Base64 (Code)
-                              │                    │
-                      Ollama Text (HTTP)  Ollama Vision (HTTP)
-                              │                    │
-                              └────────┬───────────┘
-                                       │
-                               Parse Response (Code)
-                                       │
-                               Callback to dinner-time (HTTP)
-                                       │
-                         Recipe appears in "Pending Review"
+                           ┌── IF recipeText? ──┐
+                           │                     │
+                      [Text path]          IF recipeUrl? ──┐
+                           │               │               │
+                    Text Prep (Code)  [URL path]      [File path]
+                           │               │               │
+                           │       Fetch URL (GET)  Fetch File (GET)
+                           │               │               │
+                           │       Clean HTML (Code) Base64 (Code)
+                           │               │               │
+                           └───────Ollama Text (HTTP) Ollama Vision (HTTP)
+                                           │               │
+                                           └───────┬───────┘
+                                                   │
+                                           Parse Response (Code)
+                                                   │
+                                           Callback to dinner-time (HTTP)
+                                                   │
+                                     Recipe appears in "Pending Review"
 ```
 
 ### File upload path
@@ -36,6 +38,11 @@ User uploads image → dinner-time app → webhook POST to n8n → fetch file �
 ### URL import path
 ```
 User pastes URL → dinner-time app → webhook POST to n8n → fetch webpage → clean HTML → Ollama text → parse → callback
+```
+
+### Raw text path
+```
+User pastes text → dinner-time app → webhook POST to n8n → prep text (Code) → Ollama text → parse → callback
 ```
 
 ## Prerequisites
@@ -94,7 +101,7 @@ Open n8n and create a new workflow. The workflow branches based on whether the i
 - **Path:** `recipe-process` (becomes `/webhook/recipe-process`)
 - **Response Mode:** Respond immediately with 200
 
-This receives one of two payload formats:
+This receives one of three payload formats:
 
 **File upload payload:**
 ```json
@@ -115,11 +122,55 @@ This receives one of two payload formats:
 }
 ```
 
-### Node 2: IF Node (Branch)
+**Raw text payload:**
+```json
+{
+  "filename": "text-1739123456789",
+  "recipeText": "Grandma's Chicken Soup\n\nIngredients:\n- 1 whole chicken...",
+  "callbackUrl": "https://dt.gravydigz.net/api/process/result"
+}
+```
+
+### Node 2: IF Node — Text Check (first branch)
+
+This is the **first** IF node in the chain. Add it before the existing URL/File IF node.
+
+- **Condition:** `{{ $json.body.recipeText }}` is not empty
+- **True output** → Text path (Node 2a-text)
+- **False output** → Node 2 (existing URL/File IF node, now renumbered as the second IF)
+
+### Node 2 (existing): IF Node — URL Check (second branch)
+
+This is the **existing** IF node, now receiving only non-text requests.
 
 - **Condition:** `{{ $json.body.recipeUrl }}` is not empty
 - **True output** → URL path (Node 2a)
 - **False output** → File path (Node 2b)
+
+### Node 2a-text: Code Node (Prep Text) — Text path
+
+This node reads the submitted text from the webhook body and formats it to match the output shape of the Clean HTML node, so it can feed into the same shared Ollama Text node.
+
+- **Mode:** Run Once for Each Item
+- **Language:** JavaScript
+- **Code:**
+```javascript
+const webhook = $input.first().json.body;
+const text = webhook.recipeText || '';
+
+// JSON-escape to prevent NodeOperationError in the HTTP Request node
+const safeText = JSON.stringify(text).slice(1, -1);
+
+return {
+  json: {
+    cleanedText: safeText,
+    extractionMethod: 'text-input',
+    webhook: webhook
+  }
+};
+```
+
+Connect the **True output** of the Text Check IF node to this node, then connect this node's output to the **Ollama Text** node (Node 2a-3), the same node used by the URL path. No additional Ollama node is needed.
 
 ### Node 2a: HTTP Request (Fetch URL) — URL path
 
@@ -351,13 +402,18 @@ Or use an expression for the full body: `{{ JSON.stringify({ filename: $json.fil
 ### Workflow Connections
 
 ```
-Webhook → IF Node
-  ├─ True (URL):  Fetch URL → Clean HTML → Ollama Text ─┐
-  │                                                       ├→ Parse Response → Callback
-  └─ False (File): Fetch File → Base64 → Ollama Vision ──┘
+Webhook → IF Text? (recipeText not empty)
+  ├─ True (Text):  Text Prep ──────────────────────────────┐
+  │                                                         │
+  └─ False → IF URL? (recipeUrl not empty)                  │
+               ├─ True (URL):  Fetch URL → Clean HTML → Ollama Text ─┐
+               │                                                      ├→ Parse Response → Callback
+               └─ False (File): Fetch File → Base64 → Ollama Vision ─┘
 ```
 
-Both the URL path (Ollama Text) and file path (Ollama Vision) connect their outputs to the shared Parse Response node.
+- The Text path (Text Prep node) connects to the **same Ollama Text node** as the URL path — no duplicate node needed.
+- Both Ollama Text and Ollama Vision connect to the shared Parse Response node.
+- Parse Response connects to the shared Callback node.
 
 **Activate the workflow** once all nodes are connected.
 
@@ -378,7 +434,20 @@ curl -X POST http://localhost:3010/api/process-url \
   -d '{"filename":"url-bourbon-glazed-steak-1739123456789"}'
 ```
 
-**Note:** The `filename` refers to a previously submitted URL import stored in `data/uploads/urls/`. Submit the URL via the app first (which creates the file), then call process-url with the filename.
+**Note:** The `filename` refers to a previously submitted URL entry. Submit the URL via the app first, then call process-url with the filename.
+
+### Test text import endpoint:
+```bash
+# Step 1: Submit text (returns filename)
+curl -X POST http://localhost:3010/api/texts \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Grandma Chicken Soup\n\nIngredients:\n- 1 whole chicken\n- 3 carrots\n\nInstructions:\n1. Boil chicken."}'
+
+# Step 2: Trigger processing with the returned filename
+curl -X POST http://localhost:3010/api/process-text \
+  -H "Content-Type: application/json" \
+  -d '{"filename":"text-1739123456789"}'
+```
 
 ### Test the callback independently (skip n8n):
 ```bash
@@ -431,7 +500,8 @@ docker exec n8n wget -qO- --timeout=5 https://dt.gravydigz.net/api/uploads
 | URL fetch blocked (403/captcha) | Site has anti-scraping protection — the User-Agent header helps but some sites block non-browser requests. Use file upload as fallback |
 | URL response is too large / truncated | The Clean HTML node truncates text fallback to ~12000 chars. For very long pages, the recipe content may be cut off — ensure key recipe content is near the top of the page |
 | JSON-LD extraction used wrong data | Check the n8n execution log — the Clean HTML node outputs `extractionMethod` (`json-ld` or `text`). If JSON-LD was used but recipe data looks wrong, the site may have malformed structured data. Delete the `if (ldJsonBlocks)` block to force text fallback |
-| IF node routes to wrong branch | Verify the condition checks `$json.body.recipeUrl` — file uploads don't include this field, URL imports always do |
+| IF node routes to wrong branch | The first IF checks `$json.body.recipeText`, the second checks `$json.body.recipeUrl` — ensure they are chained in that order |
+| Text path not reaching Ollama | Confirm the Text Prep Code node output connects to the same Ollama Text node as the URL path |
 
 ### Docker Networking Notes
 

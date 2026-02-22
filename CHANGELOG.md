@@ -6,6 +6,19 @@ Version format: `YYMM.VV.P` — YearMonth.Version.Patch
 
 ---
 
+## [2602.04.0] - 2026-02-22
+
+### Added
+- **Paste Recipe Text input**: New textarea on the upload page for typing or pasting raw recipe text (e.g., from a cookbook or recipe card)
+  - "Submit Text" button saves the text to the server and shows it in the uploaded items list
+  - Stored text entries appear with a 📝 icon and an 80-character preview
+  - "Process with AI" routes text entries through the n8n workflow via a new `recipeText` field
+  - Extracted recipe flows into the existing "Pending Review" section for editing and saving
+- **Server: text submission API** (`POST/GET/DELETE /api/texts` and `POST /api/process-text`): mirrors the existing URL import API; sends `{ recipeText, filename, callbackUrl }` to the n8n webhook
+- **n8n workflow: raw text path**: New `IF recipeText?` branch (first in chain) routes text submissions to a Text Prep Code node, then into the existing Ollama Text node — no additional AI node required
+
+---
+
 ## [2602.03.0] - 2026-02-18
 
 ### Fixed
