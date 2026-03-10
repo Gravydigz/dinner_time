@@ -458,6 +458,12 @@ header p {
     margin-bottom: 8px;
 }
 
+.recipe-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 .recipe-card-selectable .recipe-category {
     display: inline-block;
     background: #667eea;
@@ -466,6 +472,12 @@ header p {
     border-radius: 4px;
     font-size: 0.75rem;
     font-weight: 600;
+}
+
+.recipe-star-rating {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #f59e0b;
 }
 
 .selected-recipes-section {
@@ -740,36 +752,44 @@ header p {
 .recipe-modal-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 25px;
+    padding: 18px 20px;
     border-radius: 10px;
     margin-bottom: 20px;
 }
 
 .recipe-modal-header h1 {
-    margin-bottom: 10px;
+    font-size: 1.5rem;
+    margin-bottom: 8px;
     padding-right: 30px;
+}
+
+.recipe-modal-header-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 .recipe-modal-category {
     display: inline-block;
     background: white;
     color: #667eea;
-    padding: 5px 12px;
+    padding: 3px 10px;
     border-radius: 5px;
     font-weight: 600;
+    font-size: 0.85rem;
 }
 
 .recipe-modal-meta {
     display: flex;
-    gap: 15px;
+    gap: 10px;
     flex-wrap: wrap;
-    margin-top: 15px;
-    font-size: 0.95rem;
+    font-size: 0.88rem;
 }
 
 .recipe-modal-meta span {
     background: rgba(255, 255, 255, 0.2);
-    padding: 5px 12px;
+    padding: 3px 10px;
     border-radius: 5px;
 }
 

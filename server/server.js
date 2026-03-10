@@ -6,7 +6,7 @@ const multer = require('multer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const APP_VERSION = '2602.04.0';
+const APP_VERSION = '2603.01.0';
 
 // n8n webhook configuration
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || '';

@@ -6,6 +6,17 @@ Version format: `YYMM.VV.P` — YearMonth.Version.Patch
 
 ---
 
+## [2603.01.0] - 2026-03-09
+
+### Added
+- **Star ratings on recipe cards**: Recipe tiles on the main planner page now show the family average star rating (e.g. ★ 4.2) in the bottom-right corner of each card; cards with no ratings show nothing
+
+### Changed
+- **Recipe view modal header**: Condensed from 3 lines to 2 — category badge and prep/cook/serves metadata are now combined on a single row beneath the recipe name
+- **Print view**: Slimmed header to 2 lines (matching view modal); reduced padding throughout (body, header, sections, list items) to fit more recipe content per printed page
+
+---
+
 ## [2602.04.0] - 2026-02-22
 
 ### Added

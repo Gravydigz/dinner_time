@@ -2,7 +2,7 @@
 // In development: relative paths work with file://
 // In production (Docker): served by nginx, paths relative to root
 
-const APP_VERSION = '2602.04.0';
+const APP_VERSION = '2603.01.0';
 
 const CATEGORIES = [
     'Chicken', 'Beef', 'Pork', 'Seafood', 'Pasta',

@@ -144,7 +144,17 @@ function renderMasterRecipeList() {
     const container = document.getElementById('master-recipe-list');
     if (!container) return;
 
-    container.innerHTML = masterRecipes.map(recipe => `
+    const ratings = typeof getRatings === 'function' ? getRatings() : [];
+
+    container.innerHTML = masterRecipes.map(recipe => {
+        const avg = typeof calculateAverageRating === 'function'
+            ? calculateAverageRating(ratings, recipe.name)
+            : 0;
+        const starHtml = avg > 0
+            ? `<span class="recipe-star-rating">★ ${avg.toFixed(1)}</span>`
+            : '';
+
+        return `
         <div class="recipe-card-selectable" data-recipe-id="${recipe.id}" onclick="toggleRecipeSelection('${recipe.id}')">
             <div class="recipe-card-header">
                 <h4>${recipe.name}</h4>
@@ -174,9 +184,13 @@ function renderMasterRecipeList() {
                 <span>⏱️ ${recipe.prepTime + recipe.cookTime} min</span>
                 <span>👥 ${recipe.servings} servings</span>
             </div>
-            <span class="recipe-category">${recipe.category}</span>
+            <div class="recipe-card-footer">
+                <span class="recipe-category">${recipe.category}</span>
+                ${starHtml}
+            </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 // Toggle recipe selection
@@ -325,11 +339,13 @@ function viewRecipe(recipeId) {
 
                 <div class="recipe-modal-header">
                     <h1>${recipe.name}</h1>
-                    <span class="recipe-modal-category">${recipe.category}</span>
-                    <div class="recipe-modal-meta">
-                        <span>Prep: ${recipe.prepTime} min</span>
-                        <span>Cook: ${recipe.cookTime} min</span>
-                        <span>Serves: ${recipe.servings}</span>
+                    <div class="recipe-modal-header-row">
+                        <span class="recipe-modal-category">${recipe.category}</span>
+                        <div class="recipe-modal-meta">
+                            <span>Prep: ${recipe.prepTime} min</span>
+                            <span>Cook: ${recipe.cookTime} min</span>
+                            <span>Serves: ${recipe.servings}</span>
+                        </div>
                     </div>
                 </div>
 
@@ -683,37 +699,41 @@ function printRecipe(recipeId) {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             max-width: 800px;
             margin: 0 auto;
-            padding: 30px;
+            padding: 16px;
+            font-size: 0.9rem;
         }
         .recipe-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 25px;
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-bottom: 12px;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
-        .recipe-header h1 { margin-bottom: 10px; }
-        .recipe-meta { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 15px; font-size: 0.95rem; }
-        .recipe-meta span { background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 5px; }
-        .category-badge { display: inline-block; background: white; color: #667eea; padding: 5px 12px; border-radius: 5px; font-weight: 600; margin-top: 10px; }
-        .source-info { margin-bottom: 20px; color: #666; }
+        .recipe-header h1 { font-size: 1.4rem; margin-bottom: 6px; }
+        .recipe-header-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .category-badge { background: white; color: #667eea; padding: 3px 10px; border-radius: 4px; font-weight: 600; font-size: 0.8rem; }
+        .recipe-meta { display: flex; gap: 10px; flex-wrap: wrap; font-size: 0.85rem; }
+        .recipe-meta span { background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 4px; }
+        .source-info { margin-bottom: 10px; color: #666; font-size: 0.85rem; }
         .source-info a { color: #667eea; }
-        .section { background: #f8f9fa; border-radius: 10px; padding: 25px; margin-bottom: 20px; }
-        .section h2 { color: #667eea; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #667eea; }
-        ul, ol { padding-left: 25px; }
-        li { padding: 8px 0; line-height: 1.5; }
+        .section { background: #f8f9fa; border-radius: 8px; padding: 14px 18px; margin-bottom: 10px; }
+        .section h2 { color: #667eea; font-size: 1rem; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 2px solid #667eea; }
+        ul, ol { padding-left: 20px; }
+        li { padding: 3px 0; line-height: 1.4; }
     </style>
 </head>
 <body>
     <div class="recipe-header">
         <h1>${recipe.name}</h1>
-        <span class="category-badge">${recipe.category}</span>
-        <div class="recipe-meta">
-            <span>Prep: ${recipe.prepTime} min</span>
-            <span>Cook: ${recipe.cookTime} min</span>
-            <span>Serves: ${recipe.servings}</span>
+        <div class="recipe-header-row">
+            <span class="category-badge">${recipe.category}</span>
+            <div class="recipe-meta">
+                <span>Prep: ${recipe.prepTime} min</span>
+                <span>Cook: ${recipe.cookTime} min</span>
+                <span>Serves: ${recipe.servings}</span>
+            </div>
         </div>
     </div>
     <div class="source-info">${sourceInfo}</div>
