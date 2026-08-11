@@ -312,6 +312,8 @@ The system is designed to grow:
 
 **Recipe Features**
 - Recipe search and filter by category, cook time, or rating
+- Search bar on main screen to filter recipes by name or ingredient (e.g. searching "broccoli" shows recipes named with or containing broccoli)
+- Archive a recipe from the opened recipe view (with confirmation prompt) instead of hard-deleting — archived recipes are hidden from normal views; still need to design an interface to view/restore archived recipes
 - Photo gallery for recipes
 - Add comment when rating a recipe
 
