@@ -32,7 +32,7 @@ There is no build step, test suite, or linter configured. The frontend is plain 
 - **Server storage:** `data/ratings.json` and `data/weekly_plans.json` for persistent API storage
 - **Server is the only source of truth:** the new interface keeps no plan/rating data in the browser. Plan and rating changes apply only after the server confirms; on failure the UI is unchanged and `showAppError()` shows a message. (The legacy interface keeps its old localStorage fallback.)
 - **Uploads:** `data/uploads/` for recipe images/PDFs awaiting processing
-- **Encrypted real data:** the four real data files above are gitignored and committed only as age-encrypted `.cry` twins (listed in `.age-index`, handled by `.githooks/`). Never `git add -f` them or commit with `--no-verify`; each clone needs `git config core.hooksPath .githooks` once.
+- **Encrypted real data:** the four real data files above are gitignored and committed only as age-encrypted `.cry` twins (listed in `.age-index`, handled by `.githooks/`: wrapper shims for the central secrets-process repo cloned at `~/.secrets-process`; see `secrets-process.md`). Never `git add -f` them or commit with `--no-verify`; each clone needs `git config core.hooksPath .githooks` once.
 - **Sample data:** `data/*.example.json` hold fake data, committed in plaintext. Docker images ship only these; `docker-entrypoint.sh` copies them into the mounted `data/` volume on first run if a real file is missing. Production data lives in the mounted volume and is never overwritten by a new image.
 
 ### Frontend (`frontend/public/`)
