@@ -1,11 +1,7 @@
 #!/bin/bash
-KEY="$HOME/.config/age/keys.txt"
-INDEX=".age-index"
-[ -f "$INDEX" ] || exit 0
-[ -f "$KEY" ] || { echo "post-merge: age key not found — skipping decrypt" >&2; exit 0; }
-
-while IFS= read -r path; do
-  [ -z "$path" ] && continue
-  [ -f "$path.cry" ] || continue
-  age -d -i "$KEY" -o "$path" "$path.cry"
-done < "$INDEX"
+# .githooks/post-merge — wrapper; the real hook lives in the secrets-process repo
+# (github.com/Gravydigz/secrets-process). Don't edit this file: fix the hook there.
+# Without the central hooks it warns and skips decrypting, like a missing key does.
+H="${SECRETS_PROCESS_DIR:-$HOME/.secrets-process}/hooks/post-merge"
+[ -x "$H" ] || { echo "post-merge: secrets-process hooks not found at $H — skipping decrypt (clone github.com/Gravydigz/secrets-process there, or set SECRETS_PROCESS_DIR)" >&2; exit 0; }
+exec "$H" "$@"
