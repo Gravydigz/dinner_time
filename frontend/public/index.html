@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dinner Time - Recipe Ratings</title>
     <link rel="stylesheet" href="assets/css/styles.css">
+    <script>
+        // Remember the Legacy/New interface choice per device
+        try {
+            if (localStorage.getItem('uiPreference') === 'legacy') window.location.replace('legacy/');
+        } catch (e) { /* storage unavailable: stay on new */ }
+        function setUiPreference(pref) {
+            try { localStorage.setItem('uiPreference', pref); } catch (e) {}
+            return true;
+        }
+    </script>
 </head>
 <body>
     <div class="container">
@@ -138,6 +148,14 @@
             <div class="about-modal-body">
                 <p>A family meal planning app with weekly recipe planning, ratings, dashboard analytics, and shopping list generation.</p>
                 <p class="about-version">Version <span id="about-version"></span></p>
+                <div class="about-ui-switch">
+                    <span class="about-ui-switch-label">Interface</span>
+                    <a class="ui-toggle" href="legacy/" role="switch" aria-checked="true" onclick="return setUiPreference('legacy')" title="Switch to the legacy interface">
+                        <span>Legacy</span>
+                        <span class="ui-toggle-track"><span class="ui-toggle-knob"></span></span>
+                        <span class="active">New</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>

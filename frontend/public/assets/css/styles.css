@@ -1130,3 +1130,54 @@ header p {
         grid-template-columns: 1fr;
     }
 }
+
+/* Legacy / New interface toggle */
+.about-ui-switch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.about-ui-switch-label {
+    font-weight: 600;
+    color: #333;
+}
+
+.ui-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #999;
+    text-decoration: none;
+}
+
+.ui-toggle .active {
+    color: #667eea;
+}
+
+.ui-toggle-track {
+    position: relative;
+    width: 28px;
+    height: 16px;
+    background: #667eea;
+    border-radius: 999px;
+}
+
+.ui-toggle-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+}
+
+.ui-toggle[aria-checked="true"] .ui-toggle-knob {
+    left: 14px;
+}

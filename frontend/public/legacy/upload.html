@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Upload - Dinner Time</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <style>
+        .upload-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .upload-zone {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9fa;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-color: #764ba2;
+        }
+
+        .upload-zone-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .upload-zone h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .upload-zone p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .browse-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .browse-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .file-list {
+            margin-top: 30px;
+        }
+
+        .file-item {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .file-meta {
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .remove-btn:hover {
+            background: #c82333;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .status-ready {
+            background: #28a745;
+            color: white;
+        }
+
+        .instructions-card {
+            background: #e7f3ff;
+            border-left: 4px solid #2196f3;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        .instructions-card h3 {
+            color: #2196f3;
+            margin-bottom: 15px;
+        }
+
+        .instructions-card ol {
+            margin-left: 20px;
+        }
+
+        .instructions-card li {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .instructions-card code {
+            background: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            color: #d63384;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .back-link:hover {
+            color: #764ba2;
+        }
+
+        .process-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .process-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .process-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-processing {
+            background: #667eea;
+            color: white;
+        }
+
+        .pending-section {
+            margin-top: 30px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            background: #f8f9ff;
+        }
+
+        .pending-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .pending-item {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .pending-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .pending-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        .pending-meta {
+            color: #666;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+
+        .pending-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .save-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .save-btn:hover {
+            background: #218838;
+        }
+
+        .discard-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .discard-btn:hover {
+            background: #c82333;
+        }
+
+        .edit-btn {
+            background: #ffc107;
+            color: #000;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .edit-btn:hover {
+            background: #e0a800;
+        }
+
+        /* Recipe edit modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .cancel-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .cancel-btn:hover {
+            background: #5a6268;
+        }
+
+        .url-import-section {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .url-import-section h3 {
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .url-input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .url-input-row input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .url-input-row input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .url-status {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #666;
+            min-height: 1.2em;
+        }
+
+        .url-status.error {
+            color: #dc3545;
+        }
+
+        .url-status.success {
+            color: #28a745;
+        }
+
+        .text-import-section {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .text-import-section h3 {
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .text-import-section textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px 14px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            resize: vertical;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        .text-import-section textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .text-status {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #666;
+            min-height: 1.2em;
+        }
+
+        .text-status.error {
+            color: #dc3545;
+        }
+
+        .text-status.success {
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="upload-container">
+            <a href="index.html" class="back-link">← Back to Main App</a>
+
+            <header>
+                <h1>Recipe Upload Center</h1>
+                <p>Upload recipe images or PDF files</p>
+            </header>
+
+            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-zone-icon">📤</div>
+                <h2>Drop files here or click to browse</h2>
+                <p>Accepts images (JPG, PNG) and PDF files</p>
+                <button class="browse-btn" type="button">Browse Files</button>
+            </div>
+
+            <input
+                type="file"
+                id="fileInput"
+                class="file-input"
+                accept="image/*,.pdf"
+                multiple
+            >
+
+            <div class="url-import-section">
+                <h3>Import from URL</h3>
+                <div class="url-input-row">
+                    <input type="text" id="urlInput" placeholder="Paste a recipe URL (e.g., https://www.allrecipes.com/recipe/...)" />
+                    <button class="process-btn" id="urlProcessBtn" onclick="submitUrl()">Submit URL</button>
+                </div>
+                <div class="url-status" id="urlStatus"></div>
+            </div>
+
+            <div class="text-import-section">
+                <h3>Paste Recipe Text</h3>
+                <textarea id="textInput" placeholder="Type or paste recipe text here (ingredients, instructions, etc.)..."></textarea>
+                <div style="display: flex; justify-content: flex-end;">
+                    <button class="process-btn" id="textSubmitBtn" onclick="submitText()">Submit Text</button>
+                </div>
+                <div class="text-status" id="textStatus"></div>
+            </div>
+
+            <div class="file-list" id="fileList" style="display: none;">
+                <h3>Uploaded Recipes</h3>
+                <div id="fileListContent"></div>
+            </div>
+
+            <div class="pending-section" id="pendingSection" style="display: none;">
+                <h3>Pending Review</h3>
+                <div id="pendingList"></div>
+            </div>
+
+            <div class="instructions-card">
+                <h3>How to Process Uploaded Recipes</h3>
+                <ol>
+                    <li><strong>Upload files:</strong> Drag and drop recipe images or PDFs above - they are saved directly to the server</li>
+                    <li><strong>Import from URL:</strong> Paste a recipe URL to extract the recipe directly from the webpage</li>
+                    <li><strong>Paste text:</strong> Type or paste raw recipe text (from a book, card, or any source) and submit it for AI extraction</li>
+                    <li><strong>Process with AI:</strong> Click the "Process with AI" button on any uploaded item to send it to the AI for recipe extraction</li>
+                    <li><strong>Review &amp; Save:</strong> Extracted recipes appear in the "Pending Review" section for editing before saving</li>
+                    <li><strong>After processing:</strong> Files are automatically moved to <code>data/uploads/processed/</code></li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recipe Edit Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-content">
+            <h3>Edit & Save Recipe</h3>
+            <input type="hidden" id="editFilename">
+            <div class="form-group">
+                <label>Recipe Name</label>
+                <input type="text" id="editName">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="editCategory"></select>
+                </div>
+                <div class="form-group">
+                    <label>Servings</label>
+                    <input type="number" id="editServings" min="1">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Prep Time (min)</label>
+                    <input type="number" id="editPrepTime" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Cook Time (min)</label>
+                    <input type="number" id="editCookTime" min="0">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Source</label>
+                    <input type="text" id="editSource">
+                </div>
+                <div class="form-group">
+                    <label>URL</label>
+                    <input type="text" id="editUrl">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Ingredients (JSON array)</label>
+                <textarea id="editIngredients"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Instructions (JSON array of strings)</label>
+                <textarea id="editInstructions"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <input type="text" id="editNotes">
+            </div>
+            <div class="modal-actions">
+                <button class="cancel-btn" onclick="closeEditModal()">Cancel</button>
+                <button class="save-btn" onclick="saveEditedRecipe()">Save Recipe</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/config.js"></script>
+    <script>
+        // Populate category dropdown from shared CONFIG
+        document.getElementById('editCategory').innerHTML =
+            CONFIG.categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const fileListContent = document.getElementById('fileListContent');
+        let uploadedFiles = [];
+        const processingFiles = new Set();
+        let pendingItems = [];
+
+        // Load uploaded files, submitted URLs, and submitted texts from server
+        async function loadUploadedFiles() {
+            try {
+                const [uploadsRes, urlsRes, textsRes] = await Promise.all([
+                    fetch('/api/uploads'),
+                    fetch('/api/urls'),
+                    fetch('/api/texts')
+                ]);
+
+                const files = [];
+
+                if (uploadsRes.ok) {
+                    const data = await uploadsRes.json();
+                    files.push(
+                        ...data.images.map(f => ({ ...f, type: 'image', folder: 'images' })),
+                        ...data.pdfs.map(f => ({ ...f, type: 'pdf', folder: 'pdfs' }))
+                    );
+                }
+
+                if (urlsRes.ok) {
+                    const data = await urlsRes.json();
+                    files.push(
+                        ...data.urls.map(u => ({
+                            name: u.filename,
+                            url: u.url,
+                            uploaded: u.submittedAt,
+                            type: 'url',
+                            folder: 'urls'
+                        }))
+                    );
+                }
+
+                if (textsRes.ok) {
+                    const data = await textsRes.json();
+                    files.push(
+                        ...data.texts.map(t => ({
+                            name: t.filename,
+                            preview: t.preview,
+                            uploaded: t.submittedAt,
+                            type: 'text',
+                            folder: 'texts'
+                        }))
+                    );
+                }
+
+                uploadedFiles = files.sort((a, b) => new Date(b.uploaded) - new Date(a.uploaded));
+                renderFileList();
+            } catch (error) {
+                console.log('Could not load uploads from server');
+            }
+        }
+
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Highlight drop zone when dragging over
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, () => {
+                uploadZone.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, () => {
+                uploadZone.classList.remove('dragover');
+            }, false);
+        });
+
+        // Handle dropped files
+        uploadZone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+
+        // Handle file input change
+        fileInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+
+        // Handle files
+        function handleFiles(files) {
+            [...files].forEach(file => {
+                if (file.type.startsWith('image/') || file.type === 'application/pdf') {
+                    uploadFile(file);
+                } else {
+                    alert(`File ${file.name} is not an image or PDF`);
+                }
+            });
+        }
+
+        // Upload file to server
+        async function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Show uploading status
+            const tempId = Date.now();
+            uploadedFiles.unshift({
+                name: file.name,
+                type: file.type.startsWith('image/') ? 'image' : 'pdf',
+                size: file.size,
+                uploading: true,
+                tempId: tempId
+            });
+            renderFileList();
+
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    // Remove temp entry and reload list
+                    await loadUploadedFiles();
+                } else {
+                    const error = await response.json();
+                    alert(`Upload failed: ${error.error}`);
+                    // Remove temp entry
+                    uploadedFiles = uploadedFiles.filter(f => f.tempId !== tempId);
+                    renderFileList();
+                }
+            } catch (error) {
+                alert(`Upload failed: ${error.message}`);
+                // Remove temp entry
+                uploadedFiles = uploadedFiles.filter(f => f.tempId !== tempId);
+                renderFileList();
+            }
+        }
+
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // Render file list
+        function renderFileList() {
+            if (uploadedFiles.length === 0) {
+                fileList.style.display = 'none';
+                return;
+            }
+
+            fileList.style.display = 'block';
+
+            fileListContent.innerHTML = uploadedFiles.map((file, index) => {
+                if (file.uploading) {
+                    return `
+                        <div class="file-item">
+                            <div class="file-info">
+                                <div class="file-name">
+                                    ${file.type === 'pdf' ? '📄' : '🖼️'} ${file.name}
+                                </div>
+                                <div class="file-meta">
+                                    <span style="color: #667eea;">⏳ Uploading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                const uploadDate = new Date(file.uploaded).toLocaleString();
+                const icon = file.type === 'url' ? '🔗' : file.type === 'text' ? '📝' : file.type === 'pdf' ? '📄' : '🖼️';
+                const metaLine = file.type === 'url'
+                    ? `<a href="${file.url}" target="_blank" rel="noopener">${file.url}</a> • Submitted ${uploadDate}`
+                    : file.type === 'text'
+                    ? `"${file.preview}..." • Submitted ${uploadDate}`
+                    : `${formatFileSize(file.size)} • Uploaded ${uploadDate}<br>📁 <code>${file.path}</code>`;
+
+                return `
+                    <div class="file-item">
+                        <div class="file-info">
+                            <div class="file-name">
+                                ${icon} ${file.name}
+                            </div>
+                            <div class="file-meta">
+                                ${metaLine}
+                            </div>
+                        </div>
+                        <div class="file-actions">
+                            ${processingFiles.has(file.name)
+                                ? `<button class="process-btn status-processing" disabled>Processing...</button>`
+                                : `<button class="process-btn" onclick="processWithAI('${file.folder}', '${file.name}', this)">Process with AI</button>`
+                            }
+                            <button class="remove-btn" onclick="deleteFile('${file.folder}', '${file.name}')">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Delete file or URL from server
+        async function deleteFile(folder, filename) {
+            if (!confirm(`Delete ${filename}?`)) return;
+
+            try {
+                const url = folder === 'texts'
+                    ? `/api/texts/${encodeURIComponent(filename)}`
+                    : folder === 'urls'
+                    ? `/api/urls/${encodeURIComponent(filename)}`
+                    : `/api/uploads/${folder}/${filename}`;
+
+                const response = await fetch(url, { method: 'DELETE' });
+
+                if (response.ok) {
+                    await loadUploadedFiles();
+                } else {
+                    const error = await response.json();
+                    alert(`Delete failed: ${error.error}`);
+                }
+            } catch (error) {
+                alert(`Delete failed: ${error.message}`);
+            }
+        }
+
+        // ============ URL Submission ============
+
+        async function submitUrl() {
+            const urlInput = document.getElementById('urlInput');
+            const btn = document.getElementById('urlProcessBtn');
+            const status = document.getElementById('urlStatus');
+            const url = urlInput.value.trim();
+
+            if (!url) {
+                status.textContent = 'Please enter a URL.';
+                status.className = 'url-status error';
+                return;
+            }
+
+            try {
+                new URL(url);
+            } catch (e) {
+                status.textContent = 'Invalid URL format.';
+                status.className = 'url-status error';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+            status.textContent = '';
+            status.className = 'url-status';
+
+            try {
+                const response = await fetch('/api/urls', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    status.textContent = 'URL added! Click "Process with AI" to extract the recipe.';
+                    status.className = 'url-status success';
+                    urlInput.value = '';
+                    await loadUploadedFiles();
+                } else {
+                    status.textContent = `Failed: ${data.error}`;
+                    status.className = 'url-status error';
+                }
+            } catch (error) {
+                status.textContent = `Failed: ${error.message}`;
+                status.className = 'url-status error';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Submit URL';
+            }
+        }
+
+        // ============ Text Submission ============
+
+        async function submitText() {
+            const textInput = document.getElementById('textInput');
+            const btn = document.getElementById('textSubmitBtn');
+            const status = document.getElementById('textStatus');
+            const text = textInput.value.trim();
+
+            if (!text) {
+                status.textContent = 'Please enter some recipe text.';
+                status.className = 'text-status error';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+            status.textContent = '';
+            status.className = 'text-status';
+
+            try {
+                const response = await fetch('/api/texts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    status.textContent = 'Text saved! Click "Process with AI" to extract the recipe.';
+                    status.className = 'text-status success';
+                    textInput.value = '';
+                    await loadUploadedFiles();
+                } else {
+                    status.textContent = `Failed: ${data.error}`;
+                    status.className = 'text-status error';
+                }
+            } catch (error) {
+                status.textContent = `Failed: ${error.message}`;
+                status.className = 'text-status error';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Submit Text';
+            }
+        }
+
+        // ============ AI Processing ============
+
+        async function processWithAI(folder, filename, btn) {
+            btn.disabled = true;
+            btn.textContent = 'Sending to AI...';
+
+            try {
+                let response;
+                if (folder === 'texts') {
+                    response = await fetch('/api/process-text', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ filename })
+                    });
+                } else if (folder === 'urls') {
+                    response = await fetch('/api/process-url', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ filename })
+                    });
+                } else {
+                    response = await fetch('/api/process', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ folder, filename })
+                    });
+                }
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    btn.textContent = 'Processing...';
+                    btn.classList.add('status-processing');
+                    processingFiles.add(filename);
+                    // Start polling for results
+                    pollForPending();
+                } else {
+                    btn.textContent = `Error: ${data.error}`;
+                    btn.disabled = false;
+                    setTimeout(() => { btn.textContent = 'Process with AI'; }, 3000);
+                }
+            } catch (error) {
+                btn.textContent = `Error: ${error.message}`;
+                btn.disabled = false;
+                setTimeout(() => { btn.textContent = 'Process with AI'; }, 3000);
+            }
+        }
+
+        // Poll for pending recipes
+        let pollInterval = null;
+
+        async function pollForPending() {
+            await loadPendingRecipes();
+            await loadUploadedFiles();
+            // Poll every 5 seconds for a bit
+            if (!pollInterval) {
+                let pollCount = 0;
+                pollInterval = setInterval(async () => {
+                    await loadPendingRecipes();
+                    await loadUploadedFiles();
+                    pollCount++;
+                    if (pollCount >= 60) { // Stop after 5 minutes
+                        clearInterval(pollInterval);
+                        pollInterval = null;
+                    }
+                }, 5000);
+            }
+        }
+
+        async function loadPendingRecipes() {
+            try {
+                const response = await fetch('/api/process/pending');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.pending) {
+                        data.pending.forEach(item => processingFiles.delete(item.filename));
+                    }
+                    renderPendingRecipes(data.pending);
+                }
+            } catch (error) {
+                console.log('Could not load pending recipes');
+            }
+        }
+
+        function renderPendingRecipes(pending) {
+            const section = document.getElementById('pendingSection');
+            const list = document.getElementById('pendingList');
+
+            if (!pending || pending.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            pendingItems = pending;
+            section.style.display = 'block';
+            list.innerHTML = pending.map((item, index) => {
+                const r = item.recipe;
+                const ingredientCount = r.ingredients ? r.ingredients.length : 0;
+                return `
+                    <div class="pending-item">
+                        <div class="pending-header">
+                            <span class="pending-name">${r.name || 'Unnamed Recipe'}</span>
+                            <span class="status-badge status-ready">Ready for Review</span>
+                        </div>
+                        <div class="pending-meta">
+                            Category: ${r.category || 'N/A'} &bull;
+                            ${ingredientCount} ingredients &bull;
+                            Source file: ${item.filename}
+                        </div>
+                        <div class="pending-actions">
+                            <button class="edit-btn" onclick="openEditModal(${index})">Edit & Save</button>
+                            <button class="discard-btn" onclick="discardPending('${item.filename}')">Discard</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function discardPending(filename) {
+            if (!confirm(`Discard extracted recipe from ${filename}?`)) return;
+
+            try {
+                const response = await fetch(`/api/process/pending/${encodeURIComponent(filename)}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    await loadPendingRecipes();
+                } else {
+                    const data = await response.json();
+                    alert(`Failed: ${data.error}`);
+                }
+            } catch (error) {
+                alert(`Failed: ${error.message}`);
+            }
+        }
+
+        // ============ Edit Modal ============
+
+        function openEditModal(index) {
+            const item = pendingItems[index];
+            const r = item.recipe;
+
+            document.getElementById('editFilename').value = item.filename;
+            document.getElementById('editName').value = r.name || '';
+            document.getElementById('editCategory').value = r.category || 'Other';
+            document.getElementById('editServings').value = r.servings || 4;
+            document.getElementById('editPrepTime').value = r.prepTime || 0;
+            document.getElementById('editCookTime').value = r.cookTime || 0;
+            document.getElementById('editSource').value = r.source || '';
+            document.getElementById('editUrl').value = r.url || '';
+            document.getElementById('editNotes').value = r.notes || '';
+            document.getElementById('editIngredients').value =
+                JSON.stringify(r.ingredients || [], null, 2);
+            document.getElementById('editInstructions').value =
+                JSON.stringify(r.instructions || [], null, 2);
+
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+
+        async function saveEditedRecipe() {
+            const filename = document.getElementById('editFilename').value;
+
+            let ingredients, instructions;
+            try {
+                ingredients = JSON.parse(document.getElementById('editIngredients').value);
+            } catch (e) {
+                alert('Invalid JSON in ingredients field');
+                return;
+            }
+            try {
+                instructions = JSON.parse(document.getElementById('editInstructions').value);
+            } catch (e) {
+                alert('Invalid JSON in instructions field');
+                return;
+            }
+
+            const recipe = {
+                name: document.getElementById('editName').value,
+                category: document.getElementById('editCategory').value,
+                servings: parseInt(document.getElementById('editServings').value) || 4,
+                prepTime: parseInt(document.getElementById('editPrepTime').value) || 0,
+                cookTime: parseInt(document.getElementById('editCookTime').value) || 0,
+                source: document.getElementById('editSource').value,
+                url: document.getElementById('editUrl').value,
+                notes: document.getElementById('editNotes').value,
+                ingredients,
+                instructions
+            };
+
+            try {
+                // Save recipe
+                const response = await fetch('/api/recipes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(recipe)
+                });
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    alert(`Failed to save: ${data.error}`);
+                    return;
+                }
+
+                // Remove from pending
+                await fetch(`/api/process/pending/${encodeURIComponent(filename)}`, {
+                    method: 'DELETE'
+                });
+
+                closeEditModal();
+                await loadPendingRecipes();
+                await loadUploadedFiles();
+                alert('Recipe saved successfully!');
+            } catch (error) {
+                alert(`Failed to save: ${error.message}`);
+            }
+        }
+
+        // Close modal on overlay click
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) closeEditModal();
+        });
+
+        // Initial load
+        loadUploadedFiles();
+        loadPendingRecipes();
+    </script>
+</body>
+</html>
