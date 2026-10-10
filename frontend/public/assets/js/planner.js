@@ -42,10 +42,7 @@ function shiftWeek(delta) {
     if (newOffset === weekOffset) return;
     weekOffset = newOffset;
 
-    // Clear current selection and load saved plan for the target week
-    selectedRecipes = [];
-    loadPlanForWeek(getActivePlanningWeek().isoWeek);
-    updateRecipeSelection();
+    refreshSelectionFromPlans();
     updateWeekPicker();
 }
 
@@ -63,63 +60,94 @@ function updateWeekPicker() {
     document.getElementById('week-name').textContent = labels[weekOffset] || `+${weekOffset} weeks`;
     document.getElementById('week-range').textContent = `${fmt(monday)} – ${fmt(sunday)}`;
     document.querySelector('.week-label').title = weekInfo.isoWeek;
+    document.getElementById('selected-panel-week').textContent =
+        `${document.getElementById('week-name').textContent} · ${fmt(monday)} – ${fmt(sunday)}`;
     document.getElementById('week-prev').disabled = weekOffset === 0;
     document.getElementById('week-next').disabled = weekOffset === MAX_WEEK_OFFSET;
 }
 
-// Load plan for a specific week
-function loadPlanForWeek(isoWeek) {
-    const plan = weeklyPlans.find(p => p.isoWeek === isoWeek);
-
-    if (plan) {
-        plan.recipeIds.forEach(recipeId => {
-            const recipe = masterRecipes.find(r => r.recipeId === recipeId);
-            if (recipe && !selectedRecipes.find(r => r.id === recipe.id)) {
-                selectedRecipes.push(recipe);
-            }
-        });
-    }
+// Selection always mirrors the server's saved plan for the week being planned
+function refreshSelectionFromPlans() {
+    const plan = weeklyPlans.find(p => p.isoWeek === getActivePlanningWeek().isoWeek);
+    selectedRecipes = (plan ? plan.recipeIds : [])
+        .map(recipeId => masterRecipes.find(r => r.recipeId === recipeId))
+        .filter(Boolean);
+    updateRecipeSelection();
 }
 
-// Load weekly plans from API (with localStorage fallback)
+// Selected recipes panel: shown/hidden per device, hidden by default
+function toggleSelectedPanel(open) {
+    if (typeof open !== 'boolean') {
+        open = !document.body.classList.contains('selected-panel-open');
+    }
+    document.body.classList.toggle('selected-panel-open', open);
+    document.getElementById('selected-toggle').setAttribute('aria-pressed', open);
+    try { localStorage.setItem('selectedPanelOpen', open); } catch (e) {}
+}
+
+function initSelectedPanel() {
+    let open = false;
+    try { open = localStorage.getItem('selectedPanelOpen') === 'true'; } catch (e) {}
+    toggleSelectedPanel(open);
+
+    // Keep the panel just below the sticky toolbar, whose height changes as it wraps
+    const toolbar = document.querySelector('.app-toolbar');
+    const setToolbarHeight = () =>
+        document.documentElement.style.setProperty('--toolbar-h', toolbar.offsetHeight + 'px');
+    setToolbarHeight();
+    new ResizeObserver(setToolbarHeight).observe(toolbar);
+}
+
+// Load weekly plans from the server (the server file is the only source of truth)
 async function loadWeeklyPlans() {
     try {
         const response = await fetch('/api/plans');
-        if (response.ok) {
-            const data = await response.json();
-            weeklyPlans = data.plans || [];
-            // Also save to localStorage as backup
-            localStorage.setItem('weeklyPlans', JSON.stringify(weeklyPlans));
-            return weeklyPlans;
-        }
+        if (!response.ok) throw new Error('Server returned ' + response.status);
+        const data = await response.json();
+        weeklyPlans = data.plans || [];
+        return weeklyPlans;
     } catch (error) {
-        console.log('API not available, falling back to localStorage');
+        console.error('Error loading weekly plans:', error);
+        showAppError('Could not load weekly plans from the server. Refresh to try again.');
+        return null;
     }
-
-    // Fallback to localStorage
-    const localSaved = localStorage.getItem('weeklyPlans');
-    weeklyPlans = localSaved ? JSON.parse(localSaved) : [];
-    return weeklyPlans;
 }
 
-// Save weekly plans to API (with localStorage fallback)
-async function saveWeeklyPlans() {
-    // Always save to localStorage as backup
-    localStorage.setItem('weeklyPlans', JSON.stringify(weeklyPlans));
+// Plan changes are written to the server one at a time. Nothing changes on screen
+// until the server confirms; if it can't be reached the selection stays as it was.
+let planSaveQueue = Promise.resolve();
 
-    // Try to save to API
-    try {
-        const response = await fetch('/api/plans', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ plans: weeklyPlans })
-        });
-        if (response.ok) {
-            console.log('Weekly plans saved to server');
+// Queue a change to one week's recipe list. computeIds receives the week's
+// currently saved recipeIds and returns the new list (or null for no change).
+function queuePlanChange(isoWeek, computeIds) {
+    planSaveQueue = planSaveQueue.then(async () => {
+        const plan = weeklyPlans.find(p => p.isoWeek === isoWeek);
+        const recipeIds = computeIds(plan ? [...plan.recipeIds] : []);
+        if (!recipeIds) return;
+
+        setSaveStatus('Saving…');
+        try {
+            const response = await fetch(`/api/plans/${isoWeek}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ recipeIds })
+            });
+            if (!response.ok) throw new Error('Server returned ' + response.status);
+            weeklyPlans = (await response.json()).plans;
+            setSaveStatus('Saved');
+        } catch (error) {
+            console.error('Error saving weekly plan:', error);
+            setSaveStatus('');
+            showAppError('Could not save to the server — your selection was not changed.');
         }
-    } catch (error) {
-        console.log('Could not save to API, saved to localStorage only');
-    }
+        refreshSelectionFromPlans();
+    });
+    return planSaveQueue;
+}
+
+function setSaveStatus(text) {
+    const el = document.getElementById('save-status');
+    if (el) el.textContent = text;
 }
 
 // Load master recipes from API
@@ -135,6 +163,22 @@ async function loadMasterRecipes() {
         console.error('Error loading master recipes:', error);
         showRecipeLoadError();
     }
+}
+
+// Brief error message at the bottom of the screen
+function showAppError(message) {
+    let toast = document.getElementById('app-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'app-toast';
+        toast.className = 'app-toast';
+        toast.setAttribute('role', 'alert');
+        document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(showAppError.timer);
+    showAppError.timer = setTimeout(() => toast.classList.remove('show'), 5000);
 }
 
 // Show error when recipes cannot be loaded
@@ -301,17 +345,15 @@ function toggleRecipeSelection(recipeId) {
     const recipe = masterRecipes.find(r => r.id === recipeId);
     if (!recipe) return;
 
-    const index = selectedRecipes.findIndex(r => r.id === recipeId);
+    // Applies to the week shown when clicked, even if the week changes before it saves
+    const card = document.querySelector(`.recipe-card-selectable[data-recipe-id="${recipeId}"]`);
+    if (card) card.classList.add('saving');
 
-    if (index > -1) {
-        // Remove from selection
-        selectedRecipes.splice(index, 1);
-    } else {
-        // Add to selection
-        selectedRecipes.push(recipe);
-    }
-
-    updateRecipeSelection();
+    queuePlanChange(getActivePlanningWeek().isoWeek, ids => {
+        const index = ids.indexOf(recipe.recipeId);
+        if (index > -1) ids.splice(index, 1); else ids.push(recipe.recipeId);
+        return ids;
+    }).then(() => { if (card) card.classList.remove('saving'); });
 }
 
 // Update recipe selection display
@@ -328,25 +370,22 @@ function updateRecipeSelection() {
         }
     });
 
-    // Update selected count
-    const countEl = document.getElementById('selected-count');
-    if (countEl) {
-        countEl.textContent = selectedRecipes.length;
-    }
+    // Update selected counts (panel header and toolbar badge)
+    ['selected-count', 'selected-count-badge'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = selectedRecipes.length;
+    });
 
     // Update selected recipes list
     const listContainer = document.getElementById('selected-recipes-list');
     if (listContainer) {
         if (selectedRecipes.length === 0) {
-            listContainer.innerHTML = '<p class="no-data">No recipes selected yet</p>';
+            listContainer.innerHTML = '<p class="no-data">Tick ✓ on a recipe to add it to this week.</p>';
         } else {
             listContainer.innerHTML = selectedRecipes.map(recipe => `
-                <div class="selected-recipe-item">
-                    <span class="name">${recipe.name}</span>
-                    <div class="recipe-actions">
-                        <button class="view-btn" onclick="viewRecipe('${recipe.id}')">View</button>
-                        <button class="remove-btn" onclick="toggleRecipeSelection('${recipe.id}')">Remove</button>
-                    </div>
+                <div class="selected-panel-item">
+                    <button class="selected-panel-name" onclick="viewRecipe('${recipe.id}')" title="View Recipe">${recipe.name}</button>
+                    <button class="search-clear" onclick="toggleRecipeSelection('${recipe.id}')" title="Remove from week">✕</button>
                 </div>
             `).join('');
         }
@@ -357,43 +396,8 @@ function updateRecipeSelection() {
     if (generateBtn) {
         generateBtn.disabled = selectedRecipes.length === 0;
     }
-    // Save button is always enabled to allow saving empty lists
-    const saveBtn = document.getElementById('save-list-btn');
-    if (saveBtn) {
-        saveBtn.disabled = false;
-    }
 }
 
-// Save weekly plan to database
-function saveWeeklyPlan() {
-    const weekInfo = getActivePlanningWeek();
-    const recipeIds = selectedRecipes.map(r => r.recipeId);
-
-    // Check if plan already exists for this week
-    const existingPlanIndex = weeklyPlans.findIndex(p => p.isoWeek === weekInfo.isoWeek);
-
-    const plan = {
-        planId: existingPlanIndex >= 0 ? weeklyPlans[existingPlanIndex].planId : Date.now(),
-        isoWeek: weekInfo.isoWeek,
-        year: weekInfo.year,
-        week: weekInfo.week,
-        recipeIds: recipeIds,
-        createdAt: existingPlanIndex >= 0 ? weeklyPlans[existingPlanIndex].createdAt : new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-    };
-
-    if (existingPlanIndex >= 0) {
-        // Update existing plan
-        weeklyPlans[existingPlanIndex] = plan;
-    } else {
-        // Add new plan
-        weeklyPlans.push(plan);
-    }
-
-    saveWeeklyPlans();
-    console.log('Weekly plan saved:', plan);
-    return plan;
-}
 
 // View recipe in a modal overlay
 function viewRecipe(recipeId) {
@@ -427,6 +431,7 @@ function viewRecipe(recipeId) {
         <div id="recipe-modal" class="recipe-modal-overlay" onclick="closeRecipeModal(event)">
             <div class="recipe-modal-content" onclick="event.stopPropagation()">
                 <div class="recipe-modal-actions">
+                    <span class="wake-lock-indicator" id="wake-lock-indicator" title="Recipe mode: your screen won't sleep while this recipe is open" hidden>☀ Screen on</span>
                     <button class="recipe-modal-icon-btn" onclick="printRecipe('${recipe.id}')" title="Print Recipe">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="6 9 6 2 18 2 18 9"></polyline>
@@ -445,7 +450,7 @@ function viewRecipe(recipeId) {
                 <div class="recipe-modal-header">
                     <h1>${recipe.name}</h1>
                     <div class="recipe-modal-header-row">
-                        <span class="recipe-modal-category">${recipe.category}</span>
+                        <span class="recipe-modal-category">${getRecipeCategory(recipe)}</span>
                         <div class="recipe-modal-meta">
                             <span>Prep: ${recipe.prepTime} min</span>
                             <span>Cook: ${recipe.cookTime} min</span>
@@ -460,7 +465,7 @@ function viewRecipe(recipeId) {
 
                 <div class="recipe-modal-section">
                     <h2>Ingredients</h2>
-                    <ul>${ingredientsList}</ul>
+                    <ul class="ingredients-columns">${ingredientsList}</ul>
                 </div>
 
                 <div class="recipe-modal-section">
@@ -480,6 +485,7 @@ function viewRecipe(recipeId) {
 
     document.body.insertAdjacentHTML('beforeend', modalHtml);
     document.body.style.overflow = 'hidden';
+    requestWakeLock();
 }
 
 // Close recipe modal
@@ -490,7 +496,51 @@ function closeRecipeModal(event) {
         modal.remove();
         document.body.style.overflow = '';
     }
+    releaseWakeLock();
 }
+
+// Recipe mode: keep the screen awake while a recipe is open (needs HTTPS or localhost;
+// browsers without the Screen Wake Lock API simply skip it)
+let wakeLock = null;
+
+async function requestWakeLock() {
+    if (wakeLock || !('wakeLock' in navigator)) {
+        updateWakeLockIndicator();
+        return;
+    }
+    try {
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => {
+            wakeLock = null;
+            updateWakeLockIndicator();
+        });
+        // Recipe was closed while the request was pending
+        if (!document.getElementById('recipe-modal')) releaseWakeLock();
+    } catch (error) {
+        console.log('Screen wake lock unavailable:', error.message);
+        wakeLock = null;
+    }
+    updateWakeLockIndicator();
+}
+
+function releaseWakeLock() {
+    if (wakeLock) {
+        wakeLock.release();
+        wakeLock = null;
+    }
+}
+
+function updateWakeLockIndicator() {
+    const indicator = document.getElementById('wake-lock-indicator');
+    if (indicator) indicator.hidden = !wakeLock;
+}
+
+// The browser drops the lock when the tab is hidden; take it again on return
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && document.getElementById('recipe-modal')) {
+        requestWakeLock();
+    }
+});
 
 // Edit recipe in a modal form
 function editRecipe(recipeId) {
@@ -930,25 +980,12 @@ function renderArchivedList() {
         `).join('');
 }
 
-// Save current week plan with user feedback
-function saveCurrentWeekPlan() {
-    const plan = saveWeeklyPlan();
-    if (selectedRecipes.length === 0) {
-        alert(`Cleared plan for ${plan.isoWeek}`);
-    } else {
-        alert(`Saved ${selectedRecipes.length} recipes for ${plan.isoWeek}`);
-    }
-}
-
 // Generate shopping list
 function generateShoppingList() {
     if (selectedRecipes.length === 0) {
         alert('Please select at least one recipe');
         return;
     }
-
-    // Save the weekly plan
-    saveWeeklyPlan();
 
     const shoppingList = {};
 
@@ -1280,49 +1317,33 @@ async function renderPlanHistory() {
     }).join('');
 }
 
-// Load a plan into the planner
-function loadPlanToPlanner(planId, silent = false) {
+// Copy a past plan's recipes into the week being planned (saved to the server)
+async function loadPlanToPlanner(planId) {
     const plan = weeklyPlans.find(p => p.planId === planId);
     if (!plan) {
-        if (!silent) alert('Plan not found');
+        alert('Plan not found');
         return;
     }
 
-    // Clear current selection
-    selectedRecipes = [];
+    const recipeIds = plan.recipeIds.filter(id => masterRecipes.some(r => r.recipeId === id));
+    const weekName = document.getElementById('week-name').textContent.toLowerCase();
+    await queuePlanChange(getActivePlanningWeek().isoWeek, () => recipeIds);
 
-    // Load recipes from plan
-    plan.recipeIds.forEach(recipeId => {
-        const recipe = masterRecipes.find(r => r.recipeId === recipeId);
-        if (recipe) {
-            selectedRecipes.push(recipe);
-        }
-    });
-
-    // Update UI
-    updateRecipeSelection();
-
-    // Switch to planner tab
-    if (!silent) {
+    if (selectedRecipes.length === recipeIds.length) {
         showTab('planner');
-        alert(`Loaded ${selectedRecipes.length} recipes from ${plan.isoWeek}`);
+        alert(`Copied ${recipeIds.length} recipes from ${plan.isoWeek} to ${weekName}`);
     }
 }
 
-// Load current week's plan if it exists
+// Show the saved plan for the current week on startup
 function loadCurrentWeekPlan() {
-    const weekInfo = getISOWeek();
     updateWeekPicker();
-
-    const currentPlan = weeklyPlans.find(p => p.isoWeek === weekInfo.isoWeek);
-
-    if (currentPlan) {
-        loadPlanToPlanner(currentPlan.planId, true);
-    }
+    refreshSelectionFromPlans();
 }
 
 // Initialize planner when page loads
 document.addEventListener('DOMContentLoaded', async () => {
+    initSelectedPanel();
     await loadWeeklyPlans();
     loadMasterRecipes();
 });

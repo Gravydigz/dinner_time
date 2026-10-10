@@ -42,7 +42,7 @@
                 <input type="search" id="recipe-search" placeholder="Search recipes or ingredients" oninput="setRecipeSearch(this.value)" aria-label="Search recipes or ingredients">
                 <button class="search-clear" id="recipe-search-clear" onclick="clearRecipeSearch()" title="Clear search" hidden>✕</button>
             </div>
-            <button class="shopping-btn" onclick="generateShoppingList()" id="generate-shopping-btn" disabled title="Generate Shopping List">🛒<span class="shopping-btn-label"> Shopping List</span></button>
+            <button class="shopping-btn selected-toggle" id="selected-toggle" onclick="toggleSelectedPanel()" title="Show or hide selected recipes" aria-pressed="false">☰<span class="shopping-btn-label"> Selected</span> <span class="count-badge" id="selected-count-badge">0</span></button>
         </div>
     </header>
 
@@ -51,13 +51,20 @@
         <div id="planner-tab" class="tab-content active">
             <div class="recipe-list" id="master-recipe-list"></div>
 
-            <div class="selected-recipes-section">
-                <h3>Selected Recipes (<span id="selected-count">0</span>)</h3>
+            <aside class="selected-panel" id="selected-panel" aria-label="Selected recipes">
+                <div class="selected-panel-header">
+                    <div>
+                        <h3>Selected (<span id="selected-count">0</span>)</h3>
+                        <span class="selected-panel-week" id="selected-panel-week"></span>
+                        <span class="save-status" id="save-status"></span>
+                    </div>
+                    <button class="search-clear" onclick="toggleSelectedPanel(false)" title="Hide selected recipes">✕</button>
+                </div>
                 <div id="selected-recipes-list"></div>
-                <button class="submit-btn secondary" onclick="saveCurrentWeekPlan()" id="save-list-btn">
-                    Save List
+                <button class="submit-btn" onclick="generateShoppingList()" id="generate-shopping-btn" disabled>
+                    🛒 Shopping List
                 </button>
-            </div>
+            </aside>
         </div>
 
         <!-- Plan History -->
@@ -154,7 +161,7 @@
                 <p class="about-version">Version <span id="about-version"></span></p>
                 <div class="about-row">
                     <span class="about-row-label">Recipes</span>
-                    <button class="export-btn" onclick="openArchivedModal()">🗄 Archived (<span id="archived-count">0</span>)</button>
+                    <button class="export-btn" onclick="openArchivedModal()"><span>🗄 Archived (<span id="archived-count">0</span>)</span></button>
                 </div>
                 <div class="about-row">
                     <span class="about-row-label">Data</span>

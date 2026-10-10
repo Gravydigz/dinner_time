@@ -1440,6 +1440,10 @@ body.planner-active .planner-controls {
     align-items: flex-end;
 }
 
+.app .recipe-meta span {
+    white-space: nowrap;
+}
+
 .recipe-card-stats {
     display: flex;
     flex-direction: column;
@@ -1646,4 +1650,214 @@ body.planner-active .planner-controls {
 #archived-list {
     max-height: 60vh;
     overflow-y: auto;
+}
+
+/* Selected recipes panel: pinned right, below the toolbar; tiles make room on wide screens */
+.selected-panel {
+    display: none;
+    position: fixed;
+    top: calc(var(--toolbar-h, 92px) + 12px);
+    right: 16px;
+    width: 300px;
+    max-height: calc(100vh - var(--toolbar-h, 92px) - 28px);
+    overflow-y: auto;
+    z-index: 90;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+    padding: 12px 14px 14px;
+}
+
+body.planner-active.selected-panel-open .selected-panel {
+    display: block;
+}
+
+.selected-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.selected-panel-header h3 {
+    color: #333;
+    font-size: 1.05rem;
+}
+
+.selected-panel-week {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.selected-panel .search-clear {
+    position: static;
+    transform: none;
+    font-size: 0.95rem;
+}
+
+.selected-panel-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 4px 6px 10px;
+    margin-bottom: 6px;
+    background: #f4f5fb;
+    border-left: 3px solid #667eea;
+    border-radius: 6px;
+}
+
+.selected-panel-name {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    background: transparent;
+    text-align: left;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+}
+
+.selected-panel-name:hover {
+    color: #5a4fcf;
+    text-decoration: underline;
+}
+
+.selected-panel .no-data {
+    padding: 12px 0;
+    font-size: 0.85rem;
+}
+
+.selected-panel .submit-btn {
+    margin-top: 8px;
+    padding: 10px;
+    font-size: 1rem;
+}
+
+.selected-toggle[aria-pressed="false"] {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.count-badge {
+    display: inline-block;
+    min-width: 20px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: #667eea;
+    color: white;
+    font-size: 0.75rem;
+    text-align: center;
+}
+
+.selected-toggle[aria-pressed="false"] .count-badge {
+    background: white;
+    color: #5a4fcf;
+}
+
+@media (min-width: 1100px) {
+    body.planner-active.selected-panel-open .app-main {
+        padding-right: 332px;
+    }
+}
+
+@media (max-width: 600px) {
+    .selected-panel {
+        right: 10px;
+        left: 10px;
+        width: auto;
+    }
+}
+
+@media (min-width: 1100px) and (max-width: 1700px) {
+    body.planner-active.selected-panel-open .recipe-list {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media print {
+    .selected-panel {
+        display: none !important;
+    }
+}
+
+.save-status {
+    display: block;
+    font-size: 0.75rem;
+    color: #2e9e5b;
+    min-height: 1em;
+}
+
+/* Tile waiting for the server to confirm a ✓ change */
+.app .recipe-card-selectable.saving {
+    opacity: 0.6;
+    cursor: progress;
+}
+
+.app-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translate(-50%, 20px);
+    max-width: calc(100vw - 32px);
+    padding: 12px 18px;
+    background: #b91c1c;
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 2000;
+}
+
+.app-toast.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+/* Recipe mode badge (screen wake lock active) */
+.wake-lock-indicator {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 14px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #b45309;
+    white-space: nowrap;
+}
+
+.wake-lock-indicator[hidden] {
+    display: none;
+}
+
+@media print {
+    .wake-lock-indicator {
+        display: none !important;
+    }
+}
+
+/* All pop-up windows share the recipe view's width; ingredients in two columns */
+.app .recipe-modal-content {
+    max-width: 1100px;
+}
+
+.ingredients-columns {
+    column-count: 2;
+    column-gap: 48px;
+}
+
+.ingredients-columns li {
+    break-inside: avoid;
+}
+
+@media (max-width: 700px) {
+    .ingredients-columns {
+        column-count: 1;
+    }
 }
