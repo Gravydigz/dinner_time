@@ -1,5 +1,7 @@
 # Recipe Upload & Processing Automation Guide
 
+> **Current setup:** the upload page sends items to an n8n + Ollama workflow — see `docs/N8N_RECIPE_PROCESSING.md`. This guide describes older manual and Claude-based alternatives.
+
 This guide explains how to automate the process of extracting recipes from uploaded images/PDFs and adding them to your master recipe database.
 
 ## Upload Repository Structure
