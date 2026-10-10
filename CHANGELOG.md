@@ -6,6 +6,13 @@ Version format: `YYMM.VV.P` — YearMonth.Version.Patch
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Private deployment notes**: `docs/DEPLOYMENT.private.md` (age-encrypted, listed in `.age-index`) records the site-specific build and deploy process and a deployment log; `docs/DEPLOYMENT.private.example.md` is a public template for anyone without the key. `docs/DEPLOYMENT.md`, README and `CLAUDE.md` point to it
+
+---
+
 ## [2610.00.0] - 2026-10-10
 
 ### Added

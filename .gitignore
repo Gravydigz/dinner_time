@@ -79,3 +79,7 @@ data/members.json
 data/ratings.json
 data/weekly_plans.json
 data/*.zip
+
+# Site-specific deployment notes — committed only as age-encrypted .cry (see .age-index).
+# docs/DEPLOYMENT.private.example.md is the public placeholder.
+docs/DEPLOYMENT.private.md

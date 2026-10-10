@@ -56,6 +56,7 @@ There is no build step, test suite, or linter configured. The frontend is plain 
 - Volume mounts `data/` for persistence
 - Entrypoint script (`docker-entrypoint.sh`) initializes missing data files from `*.example.json` on first run
 - Production images are built for `linux/amd64` (`docker build --platform linux/amd64 ...`)
+- **Before building or deploying, read `docs/DEPLOYMENT.md` and `docs/DEPLOYMENT.private.md`** (site-specific build host, registry account, production paths, deployment log). The private file is age-encrypted like the data files (listed in `.age-index`); append a row to its Deployment Log after each release
 
 ## Recipe Format
 

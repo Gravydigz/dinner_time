@@ -4,3 +4,5 @@ data/master_recipes.json
 data/members.json
 data/ratings.json
 data/weekly_plans.json
+# Site-specific deployment notes — added 2026-10-10
+docs/DEPLOYMENT.private.md
