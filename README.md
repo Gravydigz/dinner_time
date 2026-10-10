@@ -43,7 +43,8 @@ dinner_time/
 ├── docs/                         # Documentation
 │   ├── QUICK_START.md           # Using the app
 │   ├── WEEKLY_PLANS_GUIDE.md    # How weekly plans work
-│   ├── DEPLOYMENT.md            # Build, publish, deploy
+│   ├── DEPLOYMENT.md            # Build, publish, deploy (generic)
+│   ├── DEPLOYMENT.private.md    # Site-specific deployment notes (encrypted; template: *.example.md)
 │   ├── ARCHITECTURE.md          # Technical architecture
 │   ├── N8N_RECIPE_PROCESSING.md # Recipe processing with n8n
 │   └── AUTOMATION_GUIDE.md      # Older automation options
@@ -134,6 +135,9 @@ cd docker
 docker-compose up --build
 # Visit http://localhost:3010
 ```
+
+### Deployment
+Building, publishing and deploying releases is documented in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). Site-specific details (build host, registry account, production paths and a deployment log) are in `docs/DEPLOYMENT.private.md`, which is age-encrypted in the repository; without the key, see the template `docs/DEPLOYMENT.private.example.md`.
 
 ### Planning Your Week
 1. Open the application in your web browser

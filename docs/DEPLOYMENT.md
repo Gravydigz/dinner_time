@@ -2,6 +2,8 @@
 
 This guide covers deploying the Dinner Time application in various environments.
 
+> **Site-specific deployment details** (build host, registry account, production paths, deployment log) are in **`docs/DEPLOYMENT.private.md`**. Agents: read it before building or deploying. It is age-encrypted in the repository and decrypted by the git hooks when the key is present; without the key, see the template `docs/DEPLOYMENT.private.example.md`.
+
 ## Table of Contents
 
 1. [Quick Start with Docker](#quick-start-with-docker)
@@ -484,3 +486,4 @@ For more information, see:
 - [N8N_RECIPE_PROCESSING.md](N8N_RECIPE_PROCESSING.md) - Recipe processing with n8n
 - [WEEKLY_PLANS_GUIDE.md](WEEKLY_PLANS_GUIDE.md) - How weekly plans work
 - [ARCHITECTURE.md](ARCHITECTURE.md) - Technical architecture
+- [DEPLOYMENT.private.md](DEPLOYMENT.private.md) - Site-specific build and deploy details (encrypted; template: [DEPLOYMENT.private.example.md](DEPLOYMENT.private.example.md))
