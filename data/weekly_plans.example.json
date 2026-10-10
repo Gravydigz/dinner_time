@@ -1,0 +1,35 @@
+{
+  "plans": [
+    {
+      "planId": 1767571200000,
+      "isoWeek": "2026-W02",
+      "year": 2026,
+      "week": 2,
+      "recipeIds": [
+        1,
+        2,
+        5
+      ],
+      "createdAt": "2026-01-05T00:00:00.000Z",
+      "updatedAt": "2026-01-05T00:00:00.000Z"
+    },
+    {
+      "planId": 1768176000000,
+      "isoWeek": "2026-W03",
+      "year": 2026,
+      "week": 3,
+      "recipeIds": [
+        3,
+        4,
+        6
+      ],
+      "createdAt": "2026-01-12T00:00:00.000Z",
+      "updatedAt": "2026-01-12T00:00:00.000Z"
+    }
+  ],
+  "metadata": {
+    "version": "1.0",
+    "lastUpdated": "2026-01-12T00:00:00.000Z",
+    "description": "Weekly meal plans tracking ISO week dates and selected recipes"
+  }
+}

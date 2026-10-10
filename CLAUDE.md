@@ -32,6 +32,8 @@ There is no build step, test suite, or linter configured. The app runs directly 
 - **Server storage:** `data/ratings.json` and `data/weekly_plans.json` for persistent API storage
 - **Client fallback:** Browser localStorage used if server unavailable
 - **Uploads:** `data/uploads/` for recipe images/PDFs awaiting processing
+- **Encrypted real data:** the four real data files above are gitignored and committed only as age-encrypted `.cry` twins (listed in `.age-index`, handled by `.githooks/`). Never `git add -f` them or commit with `--no-verify`; each clone needs `git config core.hooksPath .githooks` once.
+- **Sample data:** `data/*.example.json` hold fake data, committed in plaintext. Docker images ship only these; `docker-entrypoint.sh` copies them into the mounted `data/` volume on first run if a real file is missing. Production data lives in the mounted volume and is never overwritten by a new image.
 
 ### Frontend (`frontend/public/`)
 - `index.html` - Main app with tabs: Weekly Planner, Ratings, Dashboard, Plan History
@@ -80,7 +82,7 @@ Family members are stored in `data/members.json` and loaded dynamically via the 
 
 ## Versioning & Changelog
 
-**Version format:** `YYYY.MM.DD.##` (e.g., `2026.01.31.02`)
+**Version format:** `YYMM.VV.P` — two-digit year + month, release number for that month (00, 01, …), patch number (e.g., `2610.00.0`)
 
 See `VERSION_INFO.md` for complete versioning details including:
 - All files that need version updates

@@ -174,7 +174,7 @@ User can print or view on mobile
 ### Recipe Rating Flow
 
 ```
-User selects name (Travis/Heidi/Stella/Dylan)
+User selects name (from members.json)
         ↓
 Selects recipe from dropdown
         ↓

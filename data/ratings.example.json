@@ -1,0 +1,51 @@
+{
+  "ratings": [
+    {
+      "user": "Alex",
+      "recipe": "Sheet Pan Lemon Chicken",
+      "score": 5,
+      "date": "2026-01-06T00:30:00.000Z",
+      "dateFormatted": "1/6/2026, 12:30:00 AM"
+    },
+    {
+      "user": "Jordan",
+      "recipe": "Sheet Pan Lemon Chicken",
+      "score": 4,
+      "date": "2026-01-06T00:31:00.000Z",
+      "dateFormatted": "1/6/2026, 12:31:00 AM"
+    },
+    {
+      "user": "Sam",
+      "recipe": "Weeknight Beef Tacos",
+      "score": 5,
+      "date": "2026-01-08T00:45:00.000Z",
+      "dateFormatted": "1/8/2026, 12:45:00 AM"
+    },
+    {
+      "user": "Riley",
+      "recipe": "Weeknight Beef Tacos",
+      "score": 4,
+      "date": "2026-01-08T00:46:00.000Z",
+      "dateFormatted": "1/8/2026, 12:46:00 AM"
+    },
+    {
+      "user": "Alex",
+      "recipe": "Garlic Butter Spaghetti",
+      "score": 3,
+      "date": "2026-01-13T00:20:00.000Z",
+      "dateFormatted": "1/13/2026, 12:20:00 AM"
+    },
+    {
+      "user": "Riley",
+      "recipe": "Fluffy Buttermilk Pancakes",
+      "score": 5,
+      "date": "2026-01-11T14:00:00.000Z",
+      "dateFormatted": "1/11/2026, 2:00:00 PM"
+    }
+  ],
+  "metadata": {
+    "version": "1.0",
+    "lastUpdated": "2026-01-13T00:20:00.000Z",
+    "description": "Recipe ratings from family members"
+  }
+}

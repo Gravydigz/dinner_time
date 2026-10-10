@@ -71,3 +71,11 @@ coverage/
 # Misc
 .cache
 .parcel-cache
+
+# Real app data — committed only as age-encrypted .cry (see .age-index).
+# Fake *.example.json samples are committed in plaintext and used as image defaults.
+data/master_recipes.json
+data/members.json
+data/ratings.json
+data/weekly_plans.json
+data/*.zip

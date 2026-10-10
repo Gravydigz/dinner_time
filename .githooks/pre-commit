@@ -21,13 +21,22 @@ while IFS= read -r path; do
     echo "pre-commit: WARNING — $path is in .age-index but not gitignored" >&2
 
   # hard stop: refuses the commit if the plaintext was staged directly
-  # (e.g. `git add -f`) — this is the actual leak path, not just a warning
-  if git diff --cached --name-only | grep -qxF "$path"; then
+  # (e.g. `git add -f`) — this is the actual leak path, not just a warning.
+  # Staged deletions are allowed: untracking a file moves it under encryption.
+  if git diff --cached --name-only --diff-filter=d | grep -qxF "$path"; then
     echo "pre-commit: BLOCKED — $path is staged directly. Unstage it: git restore --staged $path" >&2
     exit 1
   fi
 
   [ -f "$path" ] || continue
+
+  # only re-encrypt when the plaintext changed — age output is randomized, so
+  # re-encrypting identical content would still rewrite .cry on every commit
+  if [ -f "$path.cry" ] && age -d -i "$KEY" "$path.cry" 2>/dev/null | cmp -s - "$path"; then
+    git add "$path.cry"
+    continue
+  fi
+
   age -e -r "$PUB" -o "$path.cry" "$path"
 
   # verify the ciphertext actually round-trips before trusting it enough to commit

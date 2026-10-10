@@ -1,1 +1,6 @@
 docker/.env
+# Real app data — added 2026-10-10
+data/master_recipes.json
+data/members.json
+data/ratings.json
+data/weekly_plans.json
