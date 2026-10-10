@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   web:
-    image: gravydigz/dinner-time:2602.00.0
+    image: gravydigz/dinner-time:2610.00.0
     platform: linux/amd64
     container_name: dinner-time
     ports:

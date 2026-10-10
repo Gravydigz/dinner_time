@@ -1,0 +1,264 @@
+{
+  "recipes": [
+    {
+      "recipeId": 1,
+      "id": "sheet-pan-lemon-chicken",
+      "name": "Sheet Pan Lemon Chicken",
+      "source": "Sample Kitchen",
+      "url": "https://example.com/recipes/sheet-pan-lemon-chicken",
+      "prepTime": 10,
+      "cookTime": 35,
+      "servings": 4,
+      "category": "Chicken",
+      "ingredients": [
+        {
+          "item": "chicken thighs",
+          "amount": "2",
+          "unit": "lb"
+        },
+        {
+          "item": "lemon",
+          "amount": "1",
+          "unit": "whole",
+          "additional": "sliced"
+        },
+        {
+          "item": "baby potatoes",
+          "amount": "1",
+          "unit": "lb",
+          "additional": "halved"
+        },
+        {
+          "item": "olive oil",
+          "amount": "2",
+          "unit": "tbsp"
+        },
+        {
+          "item": "garlic",
+          "amount": "3",
+          "unit": "cloves",
+          "additional": "minced"
+        }
+      ],
+      "instructions": [
+        "Heat oven to 425°F.",
+        "Toss chicken and potatoes with oil, garlic, salt and pepper.",
+        "Top with lemon slices and roast 35 minutes."
+      ],
+      "notes": "Sample recipe — replace with your own."
+    },
+    {
+      "recipeId": 2,
+      "id": "weeknight-beef-tacos",
+      "name": "Weeknight Beef Tacos",
+      "source": "Sample Kitchen",
+      "url": "https://example.com/recipes/weeknight-beef-tacos",
+      "prepTime": 10,
+      "cookTime": 15,
+      "servings": 4,
+      "category": "Beef",
+      "ingredients": [
+        {
+          "item": "ground beef",
+          "amount": "1",
+          "unit": "lb"
+        },
+        {
+          "item": "taco seasoning",
+          "amount": "2",
+          "unit": "tbsp"
+        },
+        {
+          "item": "tortillas",
+          "amount": "8",
+          "unit": "whole"
+        },
+        {
+          "item": "cheddar cheese",
+          "amount": "1",
+          "unit": "cup",
+          "additional": "shredded"
+        },
+        {
+          "item": "lettuce",
+          "amount": "2",
+          "unit": "cup",
+          "additional": "shredded"
+        }
+      ],
+      "instructions": [
+        "Brown the beef and drain.",
+        "Stir in seasoning with 1/2 cup water and simmer 5 minutes.",
+        "Fill tortillas and top with cheese and lettuce."
+      ],
+      "notes": ""
+    },
+    {
+      "recipeId": 3,
+      "id": "garlic-butter-spaghetti",
+      "name": "Garlic Butter Spaghetti",
+      "source": "Sample Kitchen",
+      "url": "https://example.com/recipes/garlic-butter-spaghetti",
+      "prepTime": 5,
+      "cookTime": 15,
+      "servings": 4,
+      "category": "Pasta",
+      "ingredients": [
+        {
+          "item": "spaghetti",
+          "amount": "1",
+          "unit": "lb"
+        },
+        {
+          "item": "butter",
+          "amount": "4",
+          "unit": "tbsp"
+        },
+        {
+          "item": "garlic",
+          "amount": "4",
+          "unit": "cloves",
+          "additional": "minced"
+        },
+        {
+          "item": "parmesan cheese",
+          "amount": "1/2",
+          "unit": "cup",
+          "additional": "grated"
+        },
+        {
+          "item": "parsley",
+          "amount": "2",
+          "unit": "tbsp",
+          "additional": "chopped"
+        }
+      ],
+      "instructions": [
+        "Cook spaghetti; reserve 1/2 cup pasta water.",
+        "Melt butter with garlic over low heat.",
+        "Toss pasta with garlic butter, parmesan and pasta water; top with parsley."
+      ],
+      "notes": ""
+    },
+    {
+      "recipeId": 4,
+      "id": "fluffy-buttermilk-pancakes",
+      "name": "Fluffy Buttermilk Pancakes",
+      "source": "Sample Kitchen",
+      "url": "https://example.com/recipes/fluffy-buttermilk-pancakes",
+      "prepTime": 10,
+      "cookTime": 15,
+      "servings": 4,
+      "category": "Breakfast",
+      "ingredients": [
+        {
+          "item": "all-purpose flour",
+          "amount": "2",
+          "unit": "cup"
+        },
+        {
+          "item": "buttermilk",
+          "amount": "2",
+          "unit": "cup"
+        },
+        {
+          "item": "eggs",
+          "amount": "2",
+          "unit": "whole"
+        },
+        {
+          "item": "sugar",
+          "amount": "2",
+          "unit": "tbsp"
+        },
+        {
+          "item": "baking powder",
+          "amount": "2",
+          "unit": "tsp"
+        }
+      ],
+      "instructions": [
+        "Whisk dry ingredients.",
+        "Whisk buttermilk and eggs, then stir into dry ingredients.",
+        "Cook 1/4 cup portions on a hot griddle until golden."
+      ],
+      "notes": ""
+    },
+    {
+      "recipeId": 5,
+      "id": "roasted-green-beans",
+      "name": "Roasted Green Beans",
+      "source": "Sample Kitchen",
+      "url": "https://example.com/recipes/roasted-green-beans",
+      "prepTime": 5,
+      "cookTime": 20,
+      "servings": 4,
+      "category": "Side",
+      "ingredients": [
+        {
+          "item": "green beans",
+          "amount": "1",
+          "unit": "lb",
+          "additional": "trimmed"
+        },
+        {
+          "item": "olive oil",
+          "amount": "1",
+          "unit": "tbsp"
+        },
+        {
+          "item": "salt",
+          "amount": "1/2",
+          "unit": "tsp"
+        }
+      ],
+      "instructions": [
+        "Heat oven to 425°F.",
+        "Toss beans with oil and salt.",
+        "Roast 20 minutes, shaking once."
+      ],
+      "notes": ""
+    },
+    {
+      "recipeId": 6,
+      "id": "black-bean-quesadillas",
+      "name": "Black Bean Quesadillas",
+      "source": "Sample Kitchen",
+      "url": "https://example.com/recipes/black-bean-quesadillas",
+      "prepTime": 10,
+      "cookTime": 10,
+      "servings": 4,
+      "category": "Vegetarian",
+      "ingredients": [
+        {
+          "item": "black beans",
+          "amount": "1",
+          "unit": "can",
+          "additional": "drained"
+        },
+        {
+          "item": "flour tortillas",
+          "amount": "4",
+          "unit": "whole"
+        },
+        {
+          "item": "Monterey Jack cheese",
+          "amount": "2",
+          "unit": "cup",
+          "additional": "shredded"
+        },
+        {
+          "item": "salsa",
+          "amount": "1/2",
+          "unit": "cup"
+        }
+      ],
+      "instructions": [
+        "Mash beans lightly with salsa.",
+        "Spread on half of each tortilla, add cheese and fold.",
+        "Cook in a skillet 3–4 minutes per side."
+      ],
+      "notes": ""
+    }
+  ]
+}

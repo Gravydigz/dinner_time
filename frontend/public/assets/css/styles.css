@@ -1130,3 +1130,734 @@ header p {
         grid-template-columns: 1fr;
     }
 }
+
+/* About window rows: data export, Legacy / New interface toggle */
+.about-ui-switch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.about-ui-switch-label {
+    font-weight: 600;
+    color: #333;
+}
+
+.ui-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #999;
+    text-decoration: none;
+}
+
+.ui-toggle .active {
+    color: #667eea;
+}
+
+.ui-toggle-track {
+    position: relative;
+    width: 28px;
+    height: 16px;
+    background: #667eea;
+    border-radius: 999px;
+}
+
+.ui-toggle-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+}
+
+.ui-toggle[aria-checked="true"] .ui-toggle-knob {
+    left: 14px;
+}
+
+.about-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.about-row-label {
+    font-weight: 600;
+    color: #333;
+}
+
+.about-row .export-btn {
+    text-decoration: none;
+}
+
+/* ============ New interface: full-width app shell (index.html, body.app) ============ */
+
+body.app {
+    padding: 0;
+    background: #f1f2f8;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    margin: 0;
+    padding: 0;
+    border: none;
+    text-align: left;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.toolbar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+}
+
+.toolbar-row + .toolbar-row {
+    padding-top: 0;
+}
+
+.app-toolbar .app-title {
+    color: white;
+    margin: 0;
+    font-size: 1.25rem;
+    white-space: nowrap;
+}
+
+.app .tabs {
+    flex: 0 1 auto;
+    margin-left: auto;
+    min-width: 0;
+    gap: 4px;
+    margin-bottom: 0;
+    overflow-x: auto;
+}
+
+.app .tab-btn {
+    flex: 0 0 auto;
+    padding: 6px 14px;
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border-radius: 999px;
+}
+
+.app .tab-btn:hover {
+    background: rgba(255, 255, 255, 0.28);
+}
+
+.app .tab-btn.active {
+    background: white;
+    color: #5a4fcf;
+}
+
+.toolbar-link {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+/* Planner controls only show on the planner tab */
+.planner-controls {
+    display: none;
+}
+
+body.planner-active .planner-controls {
+    display: flex;
+}
+
+.week-picker {
+    display: flex;
+    align-items: center;
+    background: white;
+    color: #333;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.week-arrow {
+    border: none;
+    background: transparent;
+    color: #5a4fcf;
+    font-size: 1.5rem;
+    line-height: 1;
+    padding: 4px 10px;
+    cursor: pointer;
+}
+
+.week-arrow:disabled {
+    color: #ccc;
+    cursor: default;
+}
+
+.week-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 120px;
+    line-height: 1.2;
+}
+
+.week-label strong {
+    font-size: 0.95rem;
+}
+
+.week-label span {
+    font-size: 0.75rem;
+    color: #666;
+    white-space: nowrap;
+}
+
+.category-filter {
+    display: flex;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.category-filter::-webkit-scrollbar {
+    display: none;
+}
+
+.category-chip {
+    flex: 0 0 auto;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: transparent;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.category-chip:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.category-chip.active {
+    background: white;
+    color: #5a4fcf;
+    border-color: white;
+}
+
+.search-box {
+    position: relative;
+    flex: 0 1 260px;
+    min-width: 160px;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 7px 30px 7px 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.search-box input::-webkit-search-cancel-button {
+    display: none;
+}
+
+.search-clear {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: #999;
+    cursor: pointer;
+    padding: 4px 6px;
+}
+
+.shopping-btn {
+    flex-shrink: 0;
+    border: none;
+    background: white;
+    color: #5a4fcf;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 7px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.shopping-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.app-main {
+    flex: 1;
+    width: 100%;
+    padding: 16px;
+}
+
+.view-narrow {
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+/* Recipe grid: at most 4 tiles wide; larger screens get larger tiles */
+.app .recipe-list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.app .recipe-card-selectable {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Footer sits at the bottom of the tile: category left, rating over time/servings right */
+.app .recipe-card-footer {
+    margin-top: auto;
+    padding-top: 6px;
+    align-items: flex-end;
+}
+
+.app .recipe-meta span {
+    white-space: nowrap;
+}
+
+.recipe-card-stats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.app .recipe-card-selectable h4 {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+}
+
+.app .recipe-card-selectable .recipe-meta {
+    font-size: 0.9rem;
+    gap: 12px;
+    margin-bottom: 0;
+}
+
+.app .recipe-card-selectable .recipe-category {
+    font-size: 0.85rem;
+    padding: 4px 10px;
+}
+
+.app .recipe-star-rating {
+    font-size: 0.95rem;
+}
+
+.app .recipe-card-actions svg {
+    width: 21px;
+    height: 21px;
+}
+
+@media (max-width: 1100px) {
+    .app .recipe-list {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 820px) {
+    .app .recipe-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 560px) {
+    .app .recipe-list {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.recipe-list-empty {
+    grid-column: 1 / -1;
+}
+
+.app .recipe-card-selectable[hidden],
+.app .recipe-list-empty[hidden] {
+    display: none;
+}
+
+.app .selected-recipes-section .submit-btn {
+    margin-top: 5px;
+}
+
+.app .app-footer {
+    margin: 0;
+    padding: 10px 16px 14px;
+}
+
+@media (max-width: 900px) {
+    .planner-controls {
+        flex-wrap: wrap;
+    }
+
+    .category-filter {
+        order: 3;
+        flex-basis: 100%;
+    }
+
+    .search-box {
+        flex: 1;
+    }
+}
+
+@media (max-width: 600px) {
+    .toolbar-row {
+        gap: 8px;
+        padding: 6px 10px;
+    }
+
+    .app-toolbar .app-title,
+    .toolbar-link-label,
+    .shopping-btn-label {
+        display: none;
+    }
+
+    .app .tab-btn {
+        padding: 5px 10px;
+        font-size: 0.85rem;
+    }
+
+    .week-label {
+        min-width: 120px;
+    }
+
+    .search-box {
+        order: 4;
+        flex-basis: 100%;
+    }
+
+    .app-main {
+        padding: 10px;
+    }
+}
+
+@media print {
+    .app-toolbar,
+    .app .app-footer {
+        display: none;
+    }
+}
+
+/* Tile check button: outlined when unselected, filled when the recipe is in the week */
+.select-check-btn {
+    color: #b5b9d6;
+}
+
+.recipe-card-selectable.selected .select-check-btn svg {
+    fill: #667eea;
+    color: white;
+}
+
+.recipe-card-selectable.selected .select-check-btn svg circle {
+    stroke: #667eea;
+}
+
+/* Archive switch in the edit window's top button bar */
+.archive-switch {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 14px 0 10px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    user-select: none;
+}
+
+.archive-switch input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.archive-switch-track {
+    position: relative;
+    width: 34px;
+    height: 20px;
+    background: #ccc;
+    border-radius: 999px;
+    transition: background 0.2s ease;
+}
+
+.archive-switch-knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 14px;
+    height: 14px;
+    background: white;
+    border-radius: 50%;
+    transition: left 0.2s ease;
+}
+
+.archive-switch input:checked + .archive-switch-track {
+    background: #f59e0b;
+}
+
+.archive-switch input:checked + .archive-switch-track .archive-switch-knob {
+    left: 17px;
+}
+
+.archive-switch input:checked ~ span:last-child {
+    color: #b45309;
+}
+
+.archive-switch input:focus-visible + .archive-switch-track {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+.archived-category {
+    margin-left: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #667eea;
+}
+
+#archived-list {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+/* Selected recipes panel: pinned right, below the toolbar; tiles make room on wide screens */
+.selected-panel {
+    display: none;
+    position: fixed;
+    top: calc(var(--toolbar-h, 92px) + 12px);
+    right: 16px;
+    width: 300px;
+    max-height: calc(100vh - var(--toolbar-h, 92px) - 28px);
+    overflow-y: auto;
+    z-index: 90;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+    padding: 12px 14px 14px;
+}
+
+body.planner-active.selected-panel-open .selected-panel {
+    display: block;
+}
+
+.selected-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.selected-panel-header h3 {
+    color: #333;
+    font-size: 1.05rem;
+}
+
+.selected-panel-week {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.selected-panel .search-clear {
+    position: static;
+    transform: none;
+    font-size: 0.95rem;
+}
+
+.selected-panel-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 4px 6px 10px;
+    margin-bottom: 6px;
+    background: #f4f5fb;
+    border-left: 3px solid #667eea;
+    border-radius: 6px;
+}
+
+.selected-panel-name {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    background: transparent;
+    text-align: left;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+}
+
+.selected-panel-name:hover {
+    color: #5a4fcf;
+    text-decoration: underline;
+}
+
+.selected-panel .no-data {
+    padding: 12px 0;
+    font-size: 0.85rem;
+}
+
+.selected-panel .submit-btn {
+    margin-top: 8px;
+    padding: 10px;
+    font-size: 1rem;
+}
+
+.selected-toggle[aria-pressed="false"] {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.count-badge {
+    display: inline-block;
+    min-width: 20px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: #667eea;
+    color: white;
+    font-size: 0.75rem;
+    text-align: center;
+}
+
+.selected-toggle[aria-pressed="false"] .count-badge {
+    background: white;
+    color: #5a4fcf;
+}
+
+@media (min-width: 1100px) {
+    body.planner-active.selected-panel-open .app-main {
+        padding-right: 332px;
+    }
+}
+
+@media (max-width: 600px) {
+    .selected-panel {
+        right: 10px;
+        left: 10px;
+        width: auto;
+    }
+}
+
+@media (min-width: 1100px) and (max-width: 1700px) {
+    body.planner-active.selected-panel-open .recipe-list {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media print {
+    .selected-panel {
+        display: none !important;
+    }
+}
+
+.save-status {
+    display: block;
+    font-size: 0.75rem;
+    color: #2e9e5b;
+    min-height: 1em;
+}
+
+/* Tile waiting for the server to confirm a ✓ change */
+.app .recipe-card-selectable.saving {
+    opacity: 0.6;
+    cursor: progress;
+}
+
+.app-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translate(-50%, 20px);
+    max-width: calc(100vw - 32px);
+    padding: 12px 18px;
+    background: #b91c1c;
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 2000;
+}
+
+.app-toast.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+/* Recipe mode badge (screen wake lock active) */
+.wake-lock-indicator {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 14px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #b45309;
+    white-space: nowrap;
+}
+
+.wake-lock-indicator[hidden] {
+    display: none;
+}
+
+@media print {
+    .wake-lock-indicator {
+        display: none !important;
+    }
+}
+
+/* All pop-up windows share the recipe view's width; ingredients in two columns */
+.app .recipe-modal-content {
+    max-width: 1100px;
+}
+
+.ingredients-columns {
+    column-count: 2;
+    column-gap: 48px;
+}
+
+.ingredients-columns li {
+    break-inside: avoid;
+}
+
+@media (max-width: 700px) {
+    .ingredients-columns {
+        column-count: 1;
+    }
+}

@@ -1,0 +1,24 @@
+{
+  "members": [
+    {
+      "id": 1,
+      "name": "Alex"
+    },
+    {
+      "id": 2,
+      "name": "Jordan"
+    },
+    {
+      "id": 3,
+      "name": "Sam"
+    },
+    {
+      "id": 4,
+      "name": "Riley"
+    }
+  ],
+  "metadata": {
+    "version": "1.0",
+    "description": "Family members for the rating system (sample data)"
+  }
+}

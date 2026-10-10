@@ -6,7 +6,7 @@ const multer = require('multer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const APP_VERSION = '2603.01.0';
+const APP_VERSION = '2610.00.0';
 
 // n8n webhook configuration
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || '';
@@ -121,6 +121,57 @@ app.get('/api/plans', (req, res) => {
 });
 
 // POST save weekly plans
+// PUT one week's recipes (empty list removes the week); other weeks are untouched,
+// so devices planning different weeks don't overwrite each other
+app.put('/api/plans/:isoWeek', (req, res) => {
+    const { isoWeek } = req.params;
+    const { recipeIds } = req.body;
+
+    const match = /^(\d{4})-W(\d{2})$/.exec(isoWeek);
+    if (!match) {
+        return res.status(400).json({ error: 'Invalid week: expected YYYY-Www' });
+    }
+    if (!Array.isArray(recipeIds) || !recipeIds.every(Number.isInteger)) {
+        return res.status(400).json({ error: 'Invalid data: recipeIds must be an array of integers' });
+    }
+
+    const data = readJsonFile(WEEKLY_PLANS_FILE, { plans: [], metadata: {} });
+    const plans = data.plans || [];
+    const index = plans.findIndex(p => p.isoWeek === isoWeek);
+    const now = new Date().toISOString();
+
+    if (recipeIds.length === 0) {
+        if (index >= 0) plans.splice(index, 1);
+    } else {
+        const existing = index >= 0 ? plans[index] : null;
+        const plan = {
+            planId: existing ? existing.planId : Date.now(),
+            isoWeek,
+            year: Number(match[1]),
+            week: Number(match[2]),
+            recipeIds,
+            createdAt: existing ? existing.createdAt : now,
+            updatedAt: now
+        };
+        if (existing) plans[index] = plan; else plans.push(plan);
+    }
+
+    const updated = {
+        plans,
+        metadata: {
+            version: "1.0",
+            lastUpdated: now,
+            description: "Weekly meal plans tracking ISO week dates and selected recipes"
+        }
+    };
+
+    if (writeJsonFile(WEEKLY_PLANS_FILE, updated)) {
+        res.json({ success: true, plans });
+    } else {
+        res.status(500).json({ error: 'Failed to save weekly plans' });
+    }
+});
+
 app.post('/api/plans', (req, res) => {
     const { plans } = req.body;
 
@@ -204,6 +255,23 @@ app.post('/api/ratings/add', (req, res) => {
 // GET app version
 app.get('/api/version', (req, res) => {
     res.json({ version: APP_VERSION });
+});
+
+// ============ Export API ============
+
+// GET all data files as one downloadable JSON (keyed by data file name)
+app.get('/api/export', (req, res) => {
+    const files = {
+        'master_recipes.json': readJsonFile(path.join(DATA_DIR, 'master_recipes.json'), { recipes: [] }),
+        'members.json': readJsonFile(path.join(DATA_DIR, 'members.json'), { members: [] }),
+        'ratings.json': readJsonFile(RATINGS_FILE, { ratings: [] }),
+        'weekly_plans.json': readJsonFile(WEEKLY_PLANS_FILE, { plans: [] })
+    };
+    const exportedAt = new Date().toISOString();
+    const filename = `dinner-time-export-${exportedAt.slice(0, 10)}.json`;
+
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.json({ app: 'dinner-time', version: APP_VERSION, exportedAt, files });
 });
 
 // ============ Members API ============

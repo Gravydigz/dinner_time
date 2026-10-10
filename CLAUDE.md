@@ -9,8 +9,8 @@ Dinner Time is a family meal planning web application with weekly recipe plannin
 ## Development Commands
 
 ```bash
-# Start local development server
-cd frontend/public && python3 -m http.server 8000
+# Start local development server (Node API + static frontend, http://localhost:3000)
+cd server && npm install && npm start
 
 # Run with Docker (production-like)
 cd docker && docker-compose up --build
@@ -22,7 +22,7 @@ python3 -m json.tool < data/master_recipes.json
 bash scripts/process_recipes.sh
 ```
 
-There is no build step, test suite, or linter configured. The app runs directly as static files.
+There is no build step, test suite, or linter configured. The frontend is plain static files served by the Express server, which also provides the `/api/*` endpoints the app needs.
 
 ## Architecture
 
@@ -30,26 +30,32 @@ There is no build step, test suite, or linter configured. The app runs directly 
 - **Master recipe database:** `data/master_recipes.json` - single source of truth for all recipes
 - **Family members:** `data/members.json` - list of family members for ratings
 - **Server storage:** `data/ratings.json` and `data/weekly_plans.json` for persistent API storage
-- **Client fallback:** Browser localStorage used if server unavailable
+- **Server is the only source of truth:** the new interface keeps no plan/rating data in the browser. Plan and rating changes apply only after the server confirms; on failure the UI is unchanged and `showAppError()` shows a message. (The legacy interface keeps its old localStorage fallback.)
 - **Uploads:** `data/uploads/` for recipe images/PDFs awaiting processing
+- **Encrypted real data:** the four real data files above are gitignored and committed only as age-encrypted `.cry` twins (listed in `.age-index`, handled by `.githooks/`). Never `git add -f` them or commit with `--no-verify`; each clone needs `git config core.hooksPath .githooks` once.
+- **Sample data:** `data/*.example.json` hold fake data, committed in plaintext. Docker images ship only these; `docker-entrypoint.sh` copies them into the mounted `data/` volume on first run if a real file is missing. Production data lives in the mounted volume and is never overwritten by a new image.
 
 ### Frontend (`frontend/public/`)
-- `index.html` - Main app with tabs: Weekly Planner, Ratings, Dashboard, Plan History
-- `upload.html` - Recipe upload interface
-- `assets/js/config.js` - Environment detection, API paths
-- `assets/js/planner.js` - Recipe loading, shopping list generation, ISO week handling
-- `assets/js/script.js` - Rating submission, dashboard rendering
+- `index.html` - Main app (`body.app`): sticky toolbar (week picker, category filter, search, ☰ Selected), tabs Planner / History / Rate / Dashboard, floating Selected panel, About window (Archived list, Export data, Legacy/New switch)
+- `upload.html` - Recipe upload interface (shares `styles.css`; new-interface styles are scoped under `.app`)
+- `legacy/` - Frozen copy of the 2603.01.0 interface served at `/legacy/`; only change it for the Legacy/New switch or critical fixes
+- `assets/js/config.js` - Version, categories, API paths
+- `assets/js/planner.js` - Recipe tiles, week picker (`weekOffset` 0..4), multi-select category filter + search, per-week plan saves (`queuePlanChange`), archive, recipe mode (screen wake lock), shopping list
+- `assets/js/script.js` - Ratings (server-only), dashboard, tabs (`showTab`), About window
 
 ### Key Implementation Details
 - Recipe IDs use both numeric (`recipeId: 1`) and string (`id: "recipe-kebab-case"`) formats
 - Dates use ISO 8601 week format: `YYYY-Www` (e.g., `2026-W05`)
 - Shopping list categorization uses keyword matching in `planner.js`
-- Data persisted server-side via Node.js API with localStorage fallback
+- Plans are saved one week at a time with `PUT /api/plans/:isoWeek` (empty `recipeIds` removes the week); `POST /api/plans` (whole file) is kept for the legacy interface
+- Archived recipes carry `"archived": true` and are hidden from the planner, filter and rating list
+- Recipes with an empty `category` are treated as "Other" (`getRecipeCategory()`)
 
 ### Docker (`docker/`)
 - Node.js Alpine-based container on port 3010
 - Volume mounts `data/` for persistence
-- Entrypoint script (`docker-entrypoint.sh`) initializes config files on first run
+- Entrypoint script (`docker-entrypoint.sh`) initializes missing data files from `*.example.json` on first run
+- Production images are built for `linux/amd64` (`docker build --platform linux/amd64 ...`)
 
 ## Recipe Format
 
@@ -80,7 +86,7 @@ Family members are stored in `data/members.json` and loaded dynamically via the 
 
 ## Versioning & Changelog
 
-**Version format:** `YYYY.MM.DD.##` (e.g., `2026.01.31.02`)
+**Version format:** `YYMM.VV.P` — two-digit year + month, release number for that month (00, 01, …), patch number (e.g., `2610.00.0`)
 
 See `VERSION_INFO.md` for complete versioning details including:
 - All files that need version updates

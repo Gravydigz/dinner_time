@@ -8,25 +8,24 @@ A family dinner recipe collection with an interactive web-based meal planning, r
 dinner_time/
 ├── frontend/                      # Frontend web application
 │   └── public/
-│       ├── index.html            # Main app (planner, rating, dashboard, history)
+│       ├── index.html            # Main app (planner, history, rating, dashboard)
 │       ├── upload.html           # Recipe upload interface
-│       └── assets/
-│           ├── css/
-│           │   └── styles.css
-│           └── js/
-│               ├── config.js
-│               ├── script.js     # Rating & dashboard logic
-│               └── planner.js    # Weekly planner & shopping list
+│       ├── assets/
+│       │   ├── css/
+│       │   │   └── styles.css
+│       │   └── js/
+│       │       ├── config.js     # Version, categories, API paths
+│       │       ├── script.js     # Rating, dashboard, tabs, About
+│       │       └── planner.js    # Planner, filters, archive, shopping list
+│       └── legacy/               # Frozen 2603.01.0 interface, served at /legacy/
 │
 ├── server/                       # Node.js backend server
 │   ├── server.js                # Express API server
 │   └── package.json             # Node.js dependencies
 │
 ├── data/                         # Data layer (persisted by server)
-│   ├── master_recipes.json      # Master recipe database
-│   ├── members.json             # Family members for rating system
-│   ├── weekly_plans.json        # Weekly meal plans by ISO week
-│   ├── ratings.json             # Recipe ratings from family members
+│   ├── *.json.cry               # Real data, age-encrypted (plaintext is gitignored)
+│   ├── *.example.json           # Fake sample data (image defaults)
 │   └── uploads/                 # Upload repository (created dynamically)
 │       ├── images/              # Uploaded recipe images
 │       ├── pdfs/                # Uploaded recipe PDFs
@@ -35,16 +34,19 @@ dinner_time/
 ├── docker/                       # Docker configuration
 │   ├── Dockerfile               # Node.js Alpine container
 │   ├── docker-compose.yml       # Service orchestration
-│   └── docker-entrypoint.sh     # Initializes config files on first run
+│   └── docker-entrypoint.sh     # Initializes data files on first run
 │
+├── .githooks/                    # age encryption hooks (see "Data Storage")
 ├── scripts/                      # Automation scripts
 │   └── process_recipes.sh       # Batch processing script
 │
 ├── docs/                         # Documentation
-│   ├── QUICK_START.md
-│   ├── AUTOMATION_GUIDE.md
-│   ├── DEPLOYMENT.md
-│   └── ARCHITECTURE.md
+│   ├── QUICK_START.md           # Using the app
+│   ├── WEEKLY_PLANS_GUIDE.md    # How weekly plans work
+│   ├── DEPLOYMENT.md            # Build, publish, deploy
+│   ├── ARCHITECTURE.md          # Technical architecture
+│   ├── N8N_RECIPE_PROCESSING.md # Recipe processing with n8n
+│   └── AUTOMATION_GUIDE.md      # Older automation options
 │
 ├── CLAUDE.md                     # AI assistant context file
 └── README.md                     # This file
@@ -62,29 +64,32 @@ dinner_time/
   - Category (Beef, Chicken, Pasta, etc.)
 
 ### Weekly Planner
-The planner allows you to:
-- Browse all recipes from the master database
-- Select 3-4 recipes for the upcoming week
-- **Current Week / Next Week tabs** for planning ahead
-- View recipe details in a modal overlay with print option
-- Print individual recipes directly from recipe cards
-- Save weekly plans to the server
-- Generate an automated shopping list
+The planner uses the full screen with a toolbar that stays visible while scrolling:
+- **Week picker** — `‹ This week ›` with the date range; plan this week through +4 weeks
+- **Category filter** — multi-select buttons built from the categories in your recipes ("All" clears the others; recipes without a category appear under "Other")
+- **Search** — matches recipe names and ingredients (e.g. "broccoli" also finds stir-fries that use it)
+- **Recipe tiles** — up to 4 wide; click a tile to open the recipe, click ✓ to add it to the week
+- **Auto-save** — every ✓ is saved to the server immediately; there is no Save button
+- **☰ Selected panel** — toggle a floating list of the week's recipes, with the **🛒 Shopping List** button
+- Edit and print icons on each tile
 
 ### Shopping List Generator
 Automatically creates an organized shopping list:
 - Aggregates ingredients from selected recipes
 - Combines duplicate ingredients intelligently
 - Organizes by category (Produce, Meat & Poultry, Dairy, Pantry, Spices)
-- Opens in a modal overlay for easy viewing
+- Opens in a pop-up window for easy viewing
 - Print directly without opening new tabs
-- Export functionality available
 
 ### Recipe Viewing
-- **Modal overlays** for viewing full recipe details
-- **View icon** on each recipe card for quick access
-- **Print icon** on each recipe card for direct printing
+- **Pop-up window** with ingredients in two columns
+- **Recipe mode** — the screen stays awake while a recipe is open (☀ Screen on badge; requires HTTPS)
 - Sticky close/print buttons while scrolling long recipes
+
+### Recipe Archive
+- Turn on the **Archived** switch beside Save in a recipe's edit window to hide it from the planner and rating list
+- **About → Archived** lists archived recipes with View and Unarchive
+- Nothing is deleted; history and the dashboard still show archived recipes
 
 ### Rating System
 The web application allows family members to:
@@ -92,13 +97,17 @@ The web application allows family members to:
 - Choose a recipe from a dropdown list
 - Rate recipes on a scale of 1-5 (5 being great)
 - Submit ratings with automatic date/time tracking
-- **Ratings are persisted to the server** (not just localStorage)
+- Average ratings appear as ★ stars on recipe tiles
 
 ### Dashboard
 - **Overall Favorites**: View all recipes ranked by average rating
 - **Favorites by Person**: See each family member's top-rated recipes
 - **Ratings History**: Complete log of all ratings with date, user, recipe, and score
-- **Export buttons** to download plans and ratings data
+
+### About Window
+- **Archived** recipes list
+- **Export data** — downloads one JSON file containing all recipes, members, ratings and plans
+- **Interface** switch between New and Legacy (remembered per device)
 
 ### File Upload
 - **Direct server upload** for recipe images and PDFs
@@ -123,57 +132,70 @@ npm start
 ```bash
 cd docker
 docker-compose up --build
-# Visit http://localhost:3000
+# Visit http://localhost:3010
 ```
 
 ### Planning Your Week
 1. Open the application in your web browser
-2. On the "Current Week" tab (default):
-   - Browse all available recipes from the master database
-   - Click on 3-4 recipes to select them for the week
-   - Use the **view icon** (eye) to see full recipe details in a modal
-   - Use the **print icon** to print individual recipes
-   - Selected recipes appear in the "Selected Recipes" section
-   - Click "Save List" to save with ISO week date
-   - Click "Generate Shopping List" to view in modal
-   - Print the shopping list directly from the modal
-3. Use the "Next Week" tab to plan ahead for the following week
+2. Use the `‹ ›` arrows to choose the week (this week through +4 weeks)
+3. Narrow the recipes with the category buttons or the search box
+4. Click a tile to read the recipe; click ✓ to add it to the week (saved automatically)
+5. Click **☰ Selected** to review the week's recipes, then **🛒 Shopping List**
+6. Print the shopping list directly from its window
 
 ### View Plan History
-1. Click the "Plan History" tab
+1. Click the **History** tab
 2. See all your past weekly plans organized by ISO week (YYYY-Www)
-3. Click "Load This Plan" to reuse a previous week's selections
+3. Click "Load This Plan" to copy a previous week's recipes into the week shown in the planner
 
 ### Rating a Recipe
-1. Click the "Rate a Recipe" tab
+1. Click the **Rate** tab
 2. Select your name from the dropdown
 3. Choose a recipe you've tried
 4. Click a rating button (1-5)
 5. Click "Submit Rating"
 
 ### Viewing the Dashboard
-1. Click the "Dashboard" tab
+1. Click the **Dashboard** tab
 2. View overall favorite recipes ranked by average rating
 3. Click family member names to see their individual favorites
 4. Scroll down to see the complete ratings history
 
+### Legacy Interface
+The previous (2603.01.0) interface is kept for comparison at `/legacy/`. Switch from **About → Interface**. It still shows archived recipes and keeps its own browser-storage fallback.
+
 ## Data Storage
 
 ### Server-Side Storage (Node.js Backend)
-The application uses a Node.js Express server for persistent data storage:
+The server's data files are the only source of truth. In the new interface, plan and rating changes apply only once the server confirms them; if the server can't be reached, nothing changes and an error message is shown.
 - **Recipes**: `data/master_recipes.json`
 - **Members**: `data/members.json` - Family members for ratings
-- **Weekly Plans**: `data/weekly_plans.json` - Saved via API
+- **Weekly Plans**: `data/weekly_plans.json` - Saved per week via API
 - **Ratings**: `data/ratings.json` - Saved via API
 - **Uploads**: `data/uploads/images/` and `data/uploads/pdfs/`
+
+### Encrypted Data in the Repository
+Real data files are never committed in plaintext. They are gitignored, listed in `.age-index`, and committed only as age-encrypted `.cry` twins by the hooks in `.githooks/`:
+- Run `git config core.hooksPath .githooks` once per clone
+- The age key must be at `~/.config/age/keys.txt`; `post-checkout`/`post-merge` decrypt after checkout or pull
+- Never `git add -f` a listed file or commit with `--no-verify`
+
+Fake `data/*.example.json` files are committed in plaintext and are the only data built into Docker images.
+
+### Docker Data Persistence
+Production mounts its own `data/` folder into the container. On first run the entrypoint copies the samples into any missing file; existing files are never overwritten, so deploying a new image leaves production data untouched.
 
 ### API Endpoints
 | Method | Endpoint | Description |
 |--------|----------|-------------|
+| GET | `/api/version` | Get app version |
+| GET | `/api/export` | Download all data files as one JSON |
 | GET | `/api/members` | Get all family members |
 | GET | `/api/recipes` | Get all recipes |
+| PUT | `/api/recipes/:id` | Update a recipe (including `archived`) |
 | GET | `/api/plans` | Get all weekly plans |
-| POST | `/api/plans` | Save weekly plans |
+| PUT | `/api/plans/:isoWeek` | Save one week's recipe IDs (empty list removes the week) |
+| POST | `/api/plans` | Replace all weekly plans (used by the legacy interface) |
 | GET | `/api/ratings` | Get all ratings |
 | POST | `/api/ratings` | Save all ratings |
 | POST | `/api/ratings/add` | Add a single rating |
@@ -181,9 +203,6 @@ The application uses a Node.js Express server for persistent data storage:
 | POST | `/api/upload/multiple` | Upload multiple files |
 | GET | `/api/uploads` | List uploaded files |
 | DELETE | `/api/uploads/:folder/:file` | Delete uploaded file |
-
-### Fallback to localStorage
-If the server is unavailable, the frontend falls back to browser localStorage for offline functionality.
 
 ### Data Format
 All data includes:
@@ -216,7 +235,7 @@ See `docs/AUTOMATION_GUIDE.md` for automation options with n8n.
 
 ### Option 2: Manual Entry
 
-1. Edit `data/recipes/master_recipes.json` and add your recipe following this structure:
+1. Edit `data/master_recipes.json` and add your recipe following this structure:
    ```json
    {
      "recipeId": 8,                      # Next sequential ID
@@ -246,11 +265,13 @@ See `docs/AUTOMATION_GUIDE.md` for automation options with n8n.
 
 ## Browser Compatibility
 
-The rating system works in all modern web browsers:
+The app works in all modern web browsers:
 - Chrome
 - Firefox
 - Safari
 - Edge
+
+Recipe mode (keeping the screen awake) needs the Screen Wake Lock API and an HTTPS connection; where unavailable, recipes still open normally.
 
 ## System Architecture
 
@@ -272,9 +293,9 @@ The Node.js backend provides:
 - Automatic directory creation for uploads
 
 ### Data Flow
-1. **Master Database** (`data/recipes/master_recipes.json`) - Single source of truth with sequential recipe IDs
-2. **Weekly Planner** - Reads from API, saves plans via POST request
-3. **Plan History** - View and reload past weekly plans by ISO week
+1. **Master Database** (`data/master_recipes.json`) - Single source of truth with sequential recipe IDs
+2. **Weekly Planner** - Reads from API; each ✓ saves that week via `PUT /api/plans/:isoWeek`
+3. **Plan History** - View past weekly plans by ISO week and copy them into the planner
 4. **Shopping List Generator** - Aggregates and categorizes ingredients from selected recipes
 5. **Rating System** - Records ratings via API with server-side persistence
 6. **Dashboard** - Analyzes ratings to show favorites overall and by person
@@ -283,12 +304,11 @@ The Node.js backend provides:
 ### Key Features
 - **Sequential Recipe IDs**: Recipes have numeric IDs for easy database management
 - **ISO Week Tracking**: Plans tracked by ISO 8601 week format (YYYY-Www)
-- **Modal Overlays**: Recipe viewing and shopping list in modal dialogs
+- **Per-week saves**: Devices planning different weeks don't overwrite each other
+- **Pop-up Windows**: Recipe viewing, editing and shopping list in pop-up windows
 - **Direct Printing**: Print recipes and lists without opening new windows
-- **Planning Modes**: Current week and next week planning tabs
 - **Volume Persistence**: Data directory mounted as Docker volume
 - **Health Checks**: Container includes health monitoring
-- **API Fallback**: Falls back to localStorage if server unavailable
 
 ### Evolution & Extensibility
 The system is designed to grow:
@@ -302,24 +322,34 @@ The system is designed to grow:
 
 ### Planned
 
+**Maintenance & Settings release** (its own release)
+- Settings screen, with Archived recipes and Export data moved there from the About window
+- Import data from an export file
+- Browser interfaces to edit members.json and ratings.json (add/delete/change)
+- Favorites option with user selector and add/remove functionality
+- Data maintenance action to upgrade data files when a future release changes their format
+
 **Categories & Meal Planning**
 - Category validation in AI processing to prevent category changes during review
-- Meal composition planning — pick a main dish and pair it with sides for a complete meal
-
-**Dashboard & Data Management**
-- Create browser interfaces to manually edit members.json, ratings.json (add/delete/change)
-- Add favorites option with user selector and add/remove functionality
+- Meal pairing (deferred) — in the Selected panel, drag sides under a main dish to pair them into a complete meal
 
 **Recipe Features**
-- Recipe search and filter by category, cook time, or rating
-- Search bar on main screen to filter recipes by name or ingredient (e.g. searching "broccoli" shows recipes named with or containing broccoli)
-- Archive a recipe from the opened recipe view (with confirmation prompt) instead of hard-deleting — archived recipes are hidden from normal views; still need to design an interface to view/restore archived recipes
+- Filter by cook time or rating
 - Photo gallery for recipes
 - Add comment when rating a recipe
 
 **Infrastructure**
-- Mobile-responsive improvements
+- Further mobile-responsive improvements
 - Database integration (PostgreSQL/MongoDB)
+
+### Implemented
+
+**2610.00.0**
+- New full-width planner interface with legacy interface kept at `/legacy/`
+- Recipe search by name or ingredient, and multi-select category filter
+- Recipe archive with an Archived list to view and restore
+- Week picker (this week through +4 weeks), auto-save, floating Selected panel
+- Recipe mode (screen stays awake), Export data, server-only plans and ratings
 
 ## Family Members
 

@@ -1,161 +1,80 @@
-# Quick Start Guide - Dinner Time
+# Quick Start - Dinner Time
 
-## 🚀 Getting Started (2 minutes)
+## Run the App
 
-### Open the App
+**Local development** (Node.js server + frontend, http://localhost:3000):
 ```bash
-cd /Users/travisrobertson/Code/dinner_time
-open web/index.html
+cd server
+npm install
+npm start
 ```
 
-## 📅 Weekly Workflow
-
-### 1. Plan Your Week (5 minutes)
-- Click "Weekly Planner" tab
-- Select 3-4 recipes for the week
-- Click "Generate Shopping List"
-- Print the shopping list
-
-### 2. Shop (at the store)
-- Use printed shopping list
-- Check off items as you add to cart
-
-### 3. Cook (during the week)
-- Refer to recipe markdown files in `recipes/week1/` or `recipes/week2/`
-- Follow ingredient amounts and instructions
-
-### 4. Rate Recipes (after dinner)
-- Click "Rate a Recipe" tab
-- Select your name
-- Choose the recipe you just made
-- Rate 1-5 (5 = great!)
-- Submit
-
-### 5. View Dashboard
-- See family favorites ranked
-- Check individual preferences
-- Review rating history
-
-## 📤 Adding New Recipes
-
-### Quick Method
-1. Open `web/upload.html`
-2. Drag recipe image/PDF into the upload zone
-3. Open Claude Code in terminal:
-   ```bash
-   cd /Users/travisrobertson/Code/dinner_time
-   ```
-4. Tell Claude Code:
-   ```
-   Read uploads/images/[your-file.jpg]
-   Extract this recipe and add it to master_recipes.json
-   ```
-5. Recipe now appears in planner automatically!
-
-### Batch Processing
+**Docker** (http://localhost:3010):
 ```bash
-# Process all uploaded files at once
-./process_recipes.sh
+cd docker
+docker-compose up --build
 ```
 
-## 🔧 Common Tasks
+The app needs the Node.js server for its `/api/*` endpoints; opening `index.html` directly or using a plain static file server will not work.
 
-### View All Recipes
+### Data for local development
+Real data files in `data/` are age-encrypted in the repository (see README → Data Storage). With the age key installed and `git config core.hooksPath .githooks` set, they are decrypted automatically on checkout and pull. Without the key, use the fake samples:
 ```bash
-cat recipes/master_recipes.json | python -m json.tool
+for f in data/*.example.json; do cp "$f" "${f%.example.json}.json"; done
 ```
 
-### Check Upload Queue
-```bash
-ls -l uploads/images/
-ls -l uploads/pdfs/
-```
+## Plan the Week
 
-### See Processed Files
-```bash
-ls -l uploads/processed/
-```
+1. Pick the week with the `‹ This week ›` arrows (this week through +4 weeks)
+2. Narrow the recipes with the category buttons (select several, or **All**) or the search box (recipe names and ingredients)
+3. Click a tile to read the recipe; click ✓ to add it to the week — it saves immediately
+4. Click **☰ Selected** to review the week, then **🛒 Shopping List** to see and print the list
 
-### Backup Your Data
-```bash
-# Backup recipes
-cp recipes/master_recipes.json recipes/master_recipes_backup_$(date +%Y%m%d).json
+While a recipe is open the screen stays awake (☀ Screen on), so it won't sleep while you cook.
 
-# Browser data (ratings) is in localStorage
-# Export from browser DevTools: localStorage.getItem('dinnerRatings')
-```
+## Rate a Recipe
 
-## 🎯 Tips & Tricks
+1. Click the **Rate** tab
+2. Choose your name, the recipe, and a score from 1 to 5
+3. Click **Submit Rating** — average ratings appear as ★ on the recipe tiles
 
-### Best Recipe Photos
-- ✅ Clear, well-lit images
-- ✅ Capture full recipe card
-- ✅ Include ingredients AND instructions
-- ✅ Readable text
+## See Family Favorites
 
-### Shopping List Pro Tips
-- Print in advance (not in the store)
-- Organize your list by store layout
-- Add custom items with a pen if needed
-- Keep for meal prep reference
+Click the **Dashboard** tab for overall favorites, favorites by person, and the full ratings history.
 
-### Rating Strategy
-- Rate right after eating (while fresh)
-- Include all family members
-- Be honest (helps find true favorites)
-- Rate same recipe multiple times to track consistency
+## Look Back at Past Weeks
 
-### Dashboard Insights
-- **Overall Favorites** = What to make more often
-- **Individual Favorites** = Customize when someone picks
-- **Low Ratings** = Maybe skip or modify recipe
+Click the **History** tab to see past plans by ISO week. **Load This Plan** copies that week's recipes into the week shown in the planner.
 
-## 📁 File Locations
+## Manage Recipes
 
-| What | Where |
-|------|-------|
-| Main App | `web/index.html` |
-| Upload Interface | `web/upload.html` |
-| Recipe Database | `recipes/master_recipes.json` |
-| Recipe Details | `recipes/week1/`, `recipes/week2/` |
-| Upload Images | `uploads/images/` |
-| Upload PDFs | `uploads/pdfs/` |
-| Processed Files | `uploads/processed/` |
+- **Edit**: pencil icon on a tile
+- **Archive**: turn on **Archived** beside Save in the edit window to hide a recipe from the planner and rating list
+- **Restore**: About → **Archived** → Unarchive
+- **Add**: the 📤 **Upload** page (images, PDFs, URLs or pasted text), or edit `data/master_recipes.json` directly
 
-## 🆘 Troubleshooting
+## Back Up Your Data
 
-### Recipe not showing in planner?
-- Check `master_recipes.json` is valid JSON
-- Verify recipe has all required fields
-- Refresh browser page
+About → **Export data** downloads one JSON file with all recipes, members, ratings and plans.
 
-### Can't upload files?
-- Use `web/upload.html` (not `index.html`)
-- Check browser allows file operations
-- Try drag-and-drop instead of clicking
+## Legacy Interface
 
-### Shopping list incomplete?
-- Verify all selected recipes have ingredients
-- Check ingredient format in JSON
-- Some "to taste" items may not show amounts
+The previous interface is kept at `/legacy/`. Switch with About → **Interface**.
 
-### Ratings not saving?
-- Check browser localStorage is enabled
-- Don't use private/incognito mode
-- Data is per-browser (not synced across devices)
+## Troubleshooting
 
-## 📚 Learn More
+**"Could not save to the server" / "Could not load …" messages**
+- The server isn't reachable; nothing was changed. Check the container or `npm start` is running, then refresh.
 
-- Full documentation: `README.md`
-- Automation setup: `AUTOMATION_GUIDE.md`
-- Recipe structure: Look at existing recipes in `master_recipes.json`
+**Recipe mode badge doesn't appear**
+- Screen wake lock needs HTTPS (or localhost) and a supporting browser. Recipes still open normally without it.
 
-## 🎉 Enjoy!
+**Recipes not loading**
+- Validate the JSON: `python3 -m json.tool < data/master_recipes.json`
 
-Your Dinner Time system is ready to:
-- ✅ Plan weekly menus
-- ✅ Generate shopping lists
-- ✅ Track family favorites
-- ✅ Grow your recipe collection
+## More Help
 
-Happy cooking! 👨‍🍳👩‍🍳
+- Deployment: `docs/DEPLOYMENT.md`
+- Recipe processing with n8n: `docs/N8N_RECIPE_PROCESSING.md`
+- Other automation options: `docs/AUTOMATION_GUIDE.md`
+- Architecture: `docs/ARCHITECTURE.md`

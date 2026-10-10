@@ -2,11 +2,16 @@ let selectedRating = null;
 let currentPerson = null;
 let ratingsLoaded = false;
 let members = [];
+let ratings = []; // loaded from the server; the server file is the only source of truth
 
 // Initialize the app
 async function init() {
     await loadMembers();
     await loadRatingsFromFile();
+    // Recipe tiles may have rendered before ratings arrived — redraw for star ratings
+    if (typeof renderMasterRecipeList === 'function' && masterRecipes.length > 0) {
+        renderMasterRecipeList();
+    }
     loadRecipesForRating();
     setupRatingButtons();
     loadDashboard();
@@ -64,46 +69,21 @@ function populatePersonTabs() {
     `).join('');
 }
 
-// Load ratings from API (with localStorage fallback)
+// Load ratings from the server
 async function loadRatingsFromFile() {
     try {
         const response = await fetch('/api/ratings');
-        if (response.ok) {
-            const data = await response.json();
-            const ratings = data.ratings || [];
-            // Save to localStorage as backup
-            localStorage.setItem('dinnerRatings', JSON.stringify(ratings));
-            ratingsLoaded = true;
-            return;
-        }
+        if (!response.ok) throw new Error('Server returned ' + response.status);
+        const data = await response.json();
+        ratings = data.ratings || [];
     } catch (error) {
-        console.log('API not available, falling back to localStorage');
+        console.error('Error loading ratings:', error);
+        showAppError('Could not load ratings from the server. Refresh to try again.');
     }
-
     ratingsLoaded = true;
 }
 
-// Save ratings to API (with localStorage fallback)
-async function saveRatings(ratings) {
-    // Always save to localStorage as backup
-    localStorage.setItem('dinnerRatings', JSON.stringify(ratings));
-
-    // Try to save to API
-    try {
-        const response = await fetch('/api/ratings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ratings: ratings })
-        });
-        if (response.ok) {
-            console.log('Ratings saved to server');
-        }
-    } catch (error) {
-        console.log('Could not save to API, saved to localStorage only');
-    }
-}
-
-// Add a single rating via API
+// Add a single rating via API; returns true only if the server saved it
 async function addRatingToServer(rating) {
     try {
         const response = await fetch('/api/ratings/add', {
@@ -111,14 +91,11 @@ async function addRatingToServer(rating) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(rating)
         });
-        if (response.ok) {
-            console.log('Rating added to server');
-            return true;
-        }
+        return response.ok;
     } catch (error) {
-        console.log('Could not add rating to API');
+        console.error('Error saving rating:', error);
+        return false;
     }
-    return false;
 }
 
 // Load recipes from master database for rating dropdown
@@ -132,7 +109,7 @@ async function loadRecipesForRating() {
 
         // Group by category
         const categories = {};
-        data.recipes.forEach(recipe => {
+        data.recipes.filter(recipe => !recipe.archived).forEach(recipe => {
             if (!categories[recipe.category]) {
                 categories[recipe.category] = [];
             }
@@ -205,13 +182,17 @@ async function submitRating() {
         dateFormatted: new Date().toLocaleString()
     };
 
-    // Save to localStorage as backup
-    let ratings = getRatings();
+    // Only count the rating once the server has saved it; keep the form filled on failure
+    const submitBtn = document.querySelector('#rating-tab .submit-btn');
+    submitBtn.disabled = true;
+    const saved = await addRatingToServer(rating);
+    submitBtn.disabled = false;
+    if (!saved) {
+        showAppError('Could not save to the server — your rating was not recorded.');
+        return;
+    }
     ratings.push(rating);
-    localStorage.setItem('dinnerRatings', JSON.stringify(ratings));
-
-    // Save to API
-    addRatingToServer(rating);
+    if (typeof renderMasterRecipeList === 'function') renderMasterRecipeList();
 
     // Show success message
     const successMsg = document.getElementById('success-message');
@@ -230,29 +211,27 @@ async function submitRating() {
     }
 }
 
-// Get ratings from localStorage
+// Get ratings loaded from the server
 function getRatings() {
-    const saved = localStorage.getItem('dinnerRatings');
-    return saved ? JSON.parse(saved) : [];
+    return ratings;
 }
 
 // Switch tabs
-function showTab(tabName, weekMode) {
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+function showTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-
-    event.target.classList.add('active');
     document.getElementById(tabName + '-tab').classList.add('active');
+
+    // Week picker, filter, search and shopping list only apply to the planner
+    document.body.classList.toggle('planner-active', tabName === 'planner');
 
     if (tabName === 'dashboard') {
         loadDashboard();
     } else if (tabName === 'history') {
         if (typeof renderPlanHistory === 'function') {
             renderPlanHistory();
-        }
-    } else if (tabName === 'planner' && weekMode) {
-        if (typeof switchPlanningMode === 'function') {
-            switchPlanningMode(weekMode);
         }
     }
 }
@@ -389,6 +368,7 @@ function loadRatingsHistory() {
 // About modal
 function openAboutModal() {
     document.getElementById('about-version').textContent = CONFIG.version;
+    if (typeof renderArchivedList === 'function') renderArchivedList();
     document.getElementById('about-modal').style.display = 'flex';
 }
 

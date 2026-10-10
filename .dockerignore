@@ -52,3 +52,11 @@ scripts/
 
 # Testing
 tests/
+
+# Real app data — never bake into the image (fake *.example.json samples are used instead)
+data/master_recipes.json
+data/members.json
+data/ratings.json
+data/weekly_plans.json
+**/*.cry
+data/*.zip

@@ -20,9 +20,9 @@ This guide covers deploying the Dinner Time application in various environments.
 
 ### Steps
 
-1. **Clone or navigate to the project:**
+1. **Navigate to the project:**
    ```bash
-   cd /Users/travisrobertson/Code/dinner_time
+   cd dinner_time
    ```
 
 2. **Build and run with Docker Compose:**
@@ -33,7 +33,7 @@ This guide covers deploying the Dinner Time application in various environments.
 
 3. **Access the application:**
    ```
-   http://localhost:8080
+   http://localhost:3010
    ```
 
 4. **Stop the application:**
@@ -43,27 +43,44 @@ This guide covers deploying the Dinner Time application in various environments.
 
 ### Build, Tag, and Publish Docker Image
 
-From the project root directory (`dinner_time/`):
+From the project root directory (`dinner_time/`). Production runs on `linux/amd64`, so build for that platform (required when building on an Apple Silicon Mac):
 
 ```bash
 # Pull latest code
 git pull origin main
 
 # Build with version tag + latest
-docker build -t gravydigz/dinner-time:2602.00.0 -t gravydigz/dinner-time:latest -f ./docker/Dockerfile .
+docker build --platform linux/amd64 -t gravydigz/dinner-time:2610.00.0 -t gravydigz/dinner-time:latest -f ./docker/Dockerfile .
 
 # Push both tags to Docker Hub
-docker push gravydigz/dinner-time:2602.00.0
+docker push gravydigz/dinner-time:2610.00.0
 docker push gravydigz/dinner-time:latest
 ```
 
-Replace `2602.00.0` with the current version from `VERSION_INFO.md`. See that file for the full version format (`YYMM.VV.P`).
+Replace `2610.00.0` with the current version from `VERSION_INFO.md`. See that file for the full version format (`YYMM.VV.P`).
+
+The image contains only the fake `data/*.example.json` sample data; `.dockerignore` keeps real data files and encrypted `.cry` files out of it.
+
+### Deploying a New Release
+
+On the server, in the folder holding its `docker-compose.yml` and mounted `data/` folder:
+
+1. Back up the data folder (e.g. `cp -a data data.backup-$(date +%Y%m%d)`)
+2. Change the `image:` tag in `docker-compose.yml` to the new version
+3. Pull and restart:
+   ```bash
+   docker compose pull
+   docker compose up -d
+   ```
+4. Check the version: `curl -s https://<your-host>/api/version`
+
+The mounted `data/` folder is never overwritten by a new image. The entrypoint only copies sample data into files that are missing (first run).
 
 ### Docker Commands Reference
 
 ```bash
-# Run container
-docker run -d -p 3010:3000 --name dinner-time gravydigz/dinner-time:latest
+# Run container (listens on 3000 inside the container unless PORT is set)
+docker run -d -p 3010:3000 -v "$(pwd)/data:/app/data" --name dinner-time gravydigz/dinner-time:latest
 
 # View logs
 docker logs dinner-time
@@ -84,40 +101,31 @@ docker exec -it dinner-time sh
 
 ### Local Development (No Docker)
 
-1. **Start a simple HTTP server:**
+The app needs the Node.js server for its `/api/*` endpoints; a plain static file server is not enough.
 
-   **Python 3:**
+1. **Start the server:**
    ```bash
-   cd frontend/public
-   python3 -m http.server 8000
-   ```
-
-   **Node.js (http-server):**
-   ```bash
-   npm install -g http-server
-   cd frontend/public
-   http-server -p 8000
-   ```
-
-   **PHP:**
-   ```bash
-   cd frontend/public
-   php -S localhost:8000
+   cd server
+   npm install
+   npm start
    ```
 
 2. **Access the application:**
    ```
-   http://localhost:8000
+   http://localhost:3000
    ```
+
+Real data files in `data/` are decrypted from their `.cry` twins by the git hooks (see README → Data Storage). Without the age key, copy the `data/*.example.json` samples to the matching `data/*.json` names to run with fake data.
 
 ### Development with Docker
 
-Enable hot-reload by uncommenting the volume mount in `docker/docker-compose.yml`:
+Enable hot-reload by uncommenting the frontend/server volume mounts in `docker/docker-compose.yml`:
 
 ```yaml
 volumes:
-  - ../data:/usr/share/nginx/html/data
-  - ../frontend/public:/usr/share/nginx/html  # Uncomment this line
+  - ./data:/app/data
+  - ../frontend:/app/frontend   # Uncomment for frontend hot-reload
+  - ../server:/app/server       # Uncomment for server code changes (restart container)
 ```
 
 Now changes to frontend files will reflect immediately without rebuilding.
@@ -167,7 +175,7 @@ Now changes to frontend files will reflect immediately without rebuilding.
        server_name your-domain.com;
 
        location / {
-           proxy_pass http://localhost:8080;
+           proxy_pass http://localhost:3010;
            proxy_set_header Host $host;
            proxy_set_header X-Real-IP $remote_addr;
            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -189,44 +197,9 @@ Now changes to frontend files will reflect immediately without rebuilding.
    sudo certbot --nginx -d your-domain.com
    ```
 
-### Option 2: Static Hosting (Simpler, No Backend)
+### Static Hosting (Not Supported)
 
-Since this is a static site, you can deploy to:
-
-**Netlify:**
-```bash
-# Install Netlify CLI
-npm install -g netlify-cli
-
-# Deploy
-cd dinner-time
-netlify deploy --dir=frontend/public --prod
-```
-
-**Vercel:**
-```bash
-# Install Vercel CLI
-npm install -g vercel
-
-# Deploy
-cd dinner-time/frontend/public
-vercel --prod
-```
-
-**GitHub Pages:**
-```bash
-# Push to GitHub
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin https://github.com/yourusername/dinner-time.git
-git push -u origin main
-
-# Enable GitHub Pages in repository settings
-# Point to /frontend/public directory
-```
-
-**Note:** With static hosting, the data directory won't be writable, so uploads won't persist. Recipe database will be read-only.
+Static hosts (Netlify, Vercel, GitHub Pages) can't run the app: it needs the Node.js server for its `/api/*` endpoints to load recipes and save plans and ratings. Use the Docker deployment above.
 
 ---
 
@@ -286,33 +259,36 @@ cp .env.example .env
 ```
 
 Key variables:
-- `PORT`: Application port (default: 8080)
+- `PORT`: Application port (default: 3000; the compose file sets 3010)
 - `TZ`: Timezone setting
 - `NODE_ENV`: production or development
 
 ### Data Persistence
 
 The `data/` directory contains:
-- Recipe database (`data/recipes/master_recipes.json`)
+- Recipe database (`data/master_recipes.json`)
+- Members, ratings and weekly plans (`members.json`, `ratings.json`, `weekly_plans.json`)
 - User uploads (`data/uploads/`)
 
 **Important:** In Docker, mount this as a volume to persist data:
 
 ```yaml
 volumes:
-  - ./data:/usr/share/nginx/html/data
+  - ./data:/app/data
 ```
 
 Or use a named volume:
 
 ```yaml
 volumes:
-  dinner-time-data:/usr/share/nginx/html/data
+  - dinner-time-data:/app/data
 
 volumes:
   dinner-time-data:
     driver: local
 ```
+
+On first run the entrypoint fills any missing data file from the image's fake `*.example.json` samples; existing files are never overwritten. **About → Export data** in the app downloads all data files as one JSON for an extra backup.
 
 ### Backup Strategy
 
@@ -505,3 +481,6 @@ For more information, see:
 - [README.md](../README.md) - Main documentation
 - [QUICK_START.md](QUICK_START.md) - User guide
 - [AUTOMATION_GUIDE.md](AUTOMATION_GUIDE.md) - Automation setup
+- [N8N_RECIPE_PROCESSING.md](N8N_RECIPE_PROCESSING.md) - Recipe processing with n8n
+- [WEEKLY_PLANS_GUIDE.md](WEEKLY_PLANS_GUIDE.md) - How weekly plans work
+- [ARCHITECTURE.md](ARCHITECTURE.md) - Technical architecture

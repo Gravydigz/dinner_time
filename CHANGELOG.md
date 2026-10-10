@@ -6,6 +6,46 @@ Version format: `YYMM.VV.P` — YearMonth.Version.Patch
 
 ---
 
+## [2610.00.0] - 2026-10-10
+
+### Added
+- **New planner interface** (default): full-width layout with a sticky toolbar
+  - Week picker (`‹ This week ›` with date range) covering this week through +4 weeks, replacing the Current Week / Next Week tabs
+  - Multi-select category filter built from the categories in the recipe data (recipes without a category appear under "Other"); "All" clears the others and turns back on when nothing is selected
+  - Search box matching recipe names and ingredient names (every word must match)
+  - Recipe tiles: up to 4 wide (3 or fewer on smaller screens); clicking a tile opens the recipe, the ✓ button adds it to the week
+  - Floating **Selected** panel (toggle with **☰ Selected (N)**, hidden by default and remembered per device) listing the week's recipes, with the **🛒 Shopping List** button
+- **Legacy interface**: the 2603.01.0 interface is kept at `/legacy/`; switch between Legacy and New from the About window (choice remembered per device)
+- **Auto-save**: ticking or unticking a recipe saves the week immediately; unticking every recipe removes that week's plan
+- **Recipe archive**: Archived switch beside Save in the edit window hides a recipe from the planner and rating list; About → **Archived** lists archived recipes with View / Unarchive
+- **Recipe mode**: the screen stays awake while a recipe is open (Screen Wake Lock API, needs HTTPS); a **☀ Screen on** badge shows while active
+- **Export data**: About → **Export data** downloads one JSON file containing all data files
+- **Server API**: `GET /api/export`; `PUT /api/plans/:isoWeek` saves one week without touching other weeks, so devices planning different weeks don't overwrite each other
+- **Sample data**: fake `data/*.example.json` files are committed and used as first-run defaults in Docker images
+
+### Changed
+- **Server is the only source of truth** for weekly plans and ratings in the new interface: changes only apply once the server confirms, and an error message is shown if it can't be reached (the browser localStorage fallback was removed; the legacy interface keeps its own)
+- **Recipe tiles**: category bottom-left; average rating above time and servings bottom-right
+- **Toolbar**: Planner / History / Rate / Dashboard tabs moved top right beside Upload; footer reduced to About + version
+- **Pop-up windows** (recipe, edit, shopping list, About, Archived) widened to 1100px; recipe ingredients shown in two columns
+- **Real data is encrypted in the repo**: `master_recipes.json`, `members.json`, `ratings.json` and `weekly_plans.json` are gitignored and committed only as age-encrypted `.cry` files; `.dockerignore` keeps real data out of images, and the entrypoint falls back to the samples on first run (mounted production data is never overwritten)
+- **pre-commit hook**: only re-encrypts files whose contents changed, and allows untracking a file so it can be moved under encryption
+- **Version format** in `CLAUDE.md` corrected to `YYMM.VV.P`
+- **Documentation**: README, `CLAUDE.md`, `VERSION_INFO.md` and `docs/DEPLOYMENT.md` updated for this release (amd64 build command, deploying a new release, data persistence); `docs/QUICK_START.md`, `docs/ARCHITECTURE.md` and `docs/WEEKLY_PLANS_GUIDE.md` (moved into `docs/`) rewritten for the current Node.js app
+
+### Fixed
+- **Star ratings on recipe cards** (2603.01.0, never deployed): the average was returned as text, which threw an error and replaced the recipe list with "Unable to load recipes" once ratings were cached; stars also now appear on first load. The same one-line fix was applied to the legacy copy
+- **Edit window**: recipes without a category no longer default to "Chicken" when saved
+- **Recipe view**: recipes without a category show "Other" instead of an empty badge
+
+### Removed
+- **Save List** button (replaced by auto-save)
+- Family names from `docs/ARCHITECTURE.md`
+- Outdated docs from the original restructure: `GET_STARTED.md`, `PROJECT_STRUCTURE.md`, `MIGRATION_SUMMARY.md`, `PROJECT_LOCATION.md`, and root duplicates of `QUICK_START.md` and `AUTOMATION_GUIDE.md` (kept in `docs/`)
+- Static-hosting deployment option (the app requires the Node.js server)
+
+---
+
 ## [2603.01.0] - 2026-03-09
 
 ### Added
