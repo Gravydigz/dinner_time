@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**2603.01.0**
+**2610.00.0**
 
 ## Version Format
 
@@ -55,7 +55,7 @@ CONFIG.version  // Returns "2602.00.0"
 When building Docker images, tag with both version and latest:
 
 ```bash
-docker build -t gravydigz/dinner-time:2602.00.0 -t gravydigz/dinner-time:latest -f ./docker/Dockerfile .
+docker build --platform linux/amd64 -t gravydigz/dinner-time:2602.00.0 -t gravydigz/dinner-time:latest -f ./docker/Dockerfile .
 ```
 
 ## Changelog
@@ -75,5 +75,6 @@ Each version entry should include sections for:
 - [ ] Update `server/package.json` - `version`
 - [ ] Update `docker/Dockerfile` - `LABEL version`
 - [ ] Update `frontend/public/assets/js/config.js` - `APP_VERSION`
+- [ ] Update `docker/docker-compose.yml` - `image:` tag
 - [ ] Build and tag Docker image
 - [ ] Commit changes with version in commit message
