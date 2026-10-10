@@ -7,6 +7,10 @@ let members = [];
 async function init() {
     await loadMembers();
     await loadRatingsFromFile();
+    // Recipe tiles may have rendered before ratings arrived — redraw for star ratings
+    if (typeof renderMasterRecipeList === 'function' && masterRecipes.length > 0) {
+        renderMasterRecipeList();
+    }
     loadRecipesForRating();
     setupRatingButtons();
     loadDashboard();
@@ -132,7 +136,7 @@ async function loadRecipesForRating() {
 
         // Group by category
         const categories = {};
-        data.recipes.forEach(recipe => {
+        data.recipes.filter(recipe => !recipe.archived).forEach(recipe => {
             if (!categories[recipe.category]) {
                 categories[recipe.category] = [];
             }
@@ -237,22 +241,21 @@ function getRatings() {
 }
 
 // Switch tabs
-function showTab(tabName, weekMode) {
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+function showTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-
-    event.target.classList.add('active');
     document.getElementById(tabName + '-tab').classList.add('active');
+
+    // Week picker, filter, search and shopping list only apply to the planner
+    document.body.classList.toggle('planner-active', tabName === 'planner');
 
     if (tabName === 'dashboard') {
         loadDashboard();
     } else if (tabName === 'history') {
         if (typeof renderPlanHistory === 'function') {
             renderPlanHistory();
-        }
-    } else if (tabName === 'planner' && weekMode) {
-        if (typeof switchPlanningMode === 'function') {
-            switchPlanningMode(weekMode);
         }
     }
 }
@@ -389,6 +392,7 @@ function loadRatingsHistory() {
 // About modal
 function openAboutModal() {
     document.getElementById('about-version').textContent = CONFIG.version;
+    if (typeof renderArchivedList === 'function') renderArchivedList();
     document.getElementById('about-modal').style.display = 'flex';
 }
 

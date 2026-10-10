@@ -206,6 +206,23 @@ app.get('/api/version', (req, res) => {
     res.json({ version: APP_VERSION });
 });
 
+// ============ Export API ============
+
+// GET all data files as one downloadable JSON (keyed by data file name)
+app.get('/api/export', (req, res) => {
+    const files = {
+        'master_recipes.json': readJsonFile(path.join(DATA_DIR, 'master_recipes.json'), { recipes: [] }),
+        'members.json': readJsonFile(path.join(DATA_DIR, 'members.json'), { members: [] }),
+        'ratings.json': readJsonFile(RATINGS_FILE, { ratings: [] }),
+        'weekly_plans.json': readJsonFile(WEEKLY_PLANS_FILE, { plans: [] })
+    };
+    const exportedAt = new Date().toISOString();
+    const filename = `dinner-time-export-${exportedAt.slice(0, 10)}.json`;
+
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.json({ app: 'dinner-time', version: APP_VERSION, exportedAt, files });
+});
+
 // ============ Members API ============
 
 // GET all members

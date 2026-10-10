@@ -148,7 +148,7 @@ function renderMasterRecipeList() {
 
     container.innerHTML = masterRecipes.map(recipe => {
         const avg = typeof calculateAverageRating === 'function'
-            ? calculateAverageRating(ratings, recipe.name)
+            ? parseFloat(calculateAverageRating(ratings, recipe.name))
             : 0;
         const starHtml = avg > 0
             ? `<span class="recipe-star-rating">★ ${avg.toFixed(1)}</span>`

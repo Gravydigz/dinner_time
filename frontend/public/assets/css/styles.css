@@ -1131,7 +1131,7 @@ header p {
     }
 }
 
-/* Legacy / New interface toggle */
+/* About window rows: data export, Legacy / New interface toggle */
 .about-ui-switch {
     display: flex;
     align-items: center;
@@ -1180,4 +1180,470 @@ header p {
 
 .ui-toggle[aria-checked="true"] .ui-toggle-knob {
     left: 14px;
+}
+
+.about-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.about-row-label {
+    font-weight: 600;
+    color: #333;
+}
+
+.about-row .export-btn {
+    text-decoration: none;
+}
+
+/* ============ New interface: full-width app shell (index.html, body.app) ============ */
+
+body.app {
+    padding: 0;
+    background: #f1f2f8;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    margin: 0;
+    padding: 0;
+    border: none;
+    text-align: left;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.toolbar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+}
+
+.toolbar-row + .toolbar-row {
+    padding-top: 0;
+}
+
+.app-toolbar .app-title {
+    color: white;
+    margin: 0;
+    font-size: 1.25rem;
+    white-space: nowrap;
+}
+
+.app .tabs {
+    flex: 0 1 auto;
+    margin-left: auto;
+    min-width: 0;
+    gap: 4px;
+    margin-bottom: 0;
+    overflow-x: auto;
+}
+
+.app .tab-btn {
+    flex: 0 0 auto;
+    padding: 6px 14px;
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border-radius: 999px;
+}
+
+.app .tab-btn:hover {
+    background: rgba(255, 255, 255, 0.28);
+}
+
+.app .tab-btn.active {
+    background: white;
+    color: #5a4fcf;
+}
+
+.toolbar-link {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+/* Planner controls only show on the planner tab */
+.planner-controls {
+    display: none;
+}
+
+body.planner-active .planner-controls {
+    display: flex;
+}
+
+.week-picker {
+    display: flex;
+    align-items: center;
+    background: white;
+    color: #333;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.week-arrow {
+    border: none;
+    background: transparent;
+    color: #5a4fcf;
+    font-size: 1.5rem;
+    line-height: 1;
+    padding: 4px 10px;
+    cursor: pointer;
+}
+
+.week-arrow:disabled {
+    color: #ccc;
+    cursor: default;
+}
+
+.week-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 120px;
+    line-height: 1.2;
+}
+
+.week-label strong {
+    font-size: 0.95rem;
+}
+
+.week-label span {
+    font-size: 0.75rem;
+    color: #666;
+    white-space: nowrap;
+}
+
+.category-filter {
+    display: flex;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.category-filter::-webkit-scrollbar {
+    display: none;
+}
+
+.category-chip {
+    flex: 0 0 auto;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: transparent;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.category-chip:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.category-chip.active {
+    background: white;
+    color: #5a4fcf;
+    border-color: white;
+}
+
+.search-box {
+    position: relative;
+    flex: 0 1 260px;
+    min-width: 160px;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 7px 30px 7px 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.search-box input::-webkit-search-cancel-button {
+    display: none;
+}
+
+.search-clear {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: #999;
+    cursor: pointer;
+    padding: 4px 6px;
+}
+
+.shopping-btn {
+    flex-shrink: 0;
+    border: none;
+    background: white;
+    color: #5a4fcf;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 7px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.shopping-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.app-main {
+    flex: 1;
+    width: 100%;
+    padding: 16px;
+}
+
+.view-narrow {
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+/* Recipe grid: at most 4 tiles wide; larger screens get larger tiles */
+.app .recipe-list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.app .recipe-card-selectable {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Footer sits at the bottom of the tile: category left, rating over time/servings right */
+.app .recipe-card-footer {
+    margin-top: auto;
+    padding-top: 6px;
+    align-items: flex-end;
+}
+
+.recipe-card-stats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.app .recipe-card-selectable h4 {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+}
+
+.app .recipe-card-selectable .recipe-meta {
+    font-size: 0.9rem;
+    gap: 12px;
+    margin-bottom: 0;
+}
+
+.app .recipe-card-selectable .recipe-category {
+    font-size: 0.85rem;
+    padding: 4px 10px;
+}
+
+.app .recipe-star-rating {
+    font-size: 0.95rem;
+}
+
+.app .recipe-card-actions svg {
+    width: 21px;
+    height: 21px;
+}
+
+@media (max-width: 1100px) {
+    .app .recipe-list {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 820px) {
+    .app .recipe-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 560px) {
+    .app .recipe-list {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.recipe-list-empty {
+    grid-column: 1 / -1;
+}
+
+.app .recipe-card-selectable[hidden],
+.app .recipe-list-empty[hidden] {
+    display: none;
+}
+
+.app .selected-recipes-section .submit-btn {
+    margin-top: 5px;
+}
+
+.app .app-footer {
+    margin: 0;
+    padding: 10px 16px 14px;
+}
+
+@media (max-width: 900px) {
+    .planner-controls {
+        flex-wrap: wrap;
+    }
+
+    .category-filter {
+        order: 3;
+        flex-basis: 100%;
+    }
+
+    .search-box {
+        flex: 1;
+    }
+}
+
+@media (max-width: 600px) {
+    .toolbar-row {
+        gap: 8px;
+        padding: 6px 10px;
+    }
+
+    .app-toolbar .app-title,
+    .toolbar-link-label,
+    .shopping-btn-label {
+        display: none;
+    }
+
+    .app .tab-btn {
+        padding: 5px 10px;
+        font-size: 0.85rem;
+    }
+
+    .week-label {
+        min-width: 120px;
+    }
+
+    .search-box {
+        order: 4;
+        flex-basis: 100%;
+    }
+
+    .app-main {
+        padding: 10px;
+    }
+}
+
+@media print {
+    .app-toolbar,
+    .app .app-footer {
+        display: none;
+    }
+}
+
+/* Tile check button: outlined when unselected, filled when the recipe is in the week */
+.select-check-btn {
+    color: #b5b9d6;
+}
+
+.recipe-card-selectable.selected .select-check-btn svg {
+    fill: #667eea;
+    color: white;
+}
+
+.recipe-card-selectable.selected .select-check-btn svg circle {
+    stroke: #667eea;
+}
+
+/* Archive switch in the edit window's top button bar */
+.archive-switch {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 14px 0 10px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    user-select: none;
+}
+
+.archive-switch input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.archive-switch-track {
+    position: relative;
+    width: 34px;
+    height: 20px;
+    background: #ccc;
+    border-radius: 999px;
+    transition: background 0.2s ease;
+}
+
+.archive-switch-knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 14px;
+    height: 14px;
+    background: white;
+    border-radius: 50%;
+    transition: left 0.2s ease;
+}
+
+.archive-switch input:checked + .archive-switch-track {
+    background: #f59e0b;
+}
+
+.archive-switch input:checked + .archive-switch-track .archive-switch-knob {
+    left: 17px;
+}
+
+.archive-switch input:checked ~ span:last-child {
+    color: #b45309;
+}
+
+.archive-switch input:focus-visible + .archive-switch-track {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+.archived-category {
+    margin-left: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #667eea;
+}
+
+#archived-list {
+    max-height: 60vh;
+    overflow-y: auto;
 }

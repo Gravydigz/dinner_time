@@ -2,7 +2,10 @@
 let masterRecipes = [];
 let selectedRecipes = [];
 let weeklyPlans = [];
-let planningMode = 'current'; // 'current' or 'next'
+let weekOffset = 0; // 0 = current week, up to MAX_WEEK_OFFSET weeks ahead
+const MAX_WEEK_OFFSET = 4;
+let activeCategories = new Set(); // empty = All
+let searchTerms = [];
 
 // Get ISO week number and year
 function getISOWeek(date = new Date()) {
@@ -21,39 +24,47 @@ function getISOWeek(date = new Date()) {
     };
 }
 
-// Get ISO week for next week
-function getNextISOWeek() {
-    const nextWeek = new Date();
-    nextWeek.setDate(nextWeek.getDate() + 7);
-    return getISOWeek(nextWeek);
+// Date inside the week being planned (today shifted by weekOffset weeks)
+function getActivePlanningDate() {
+    const date = new Date();
+    date.setDate(date.getDate() + weekOffset * 7);
+    return date;
 }
 
-// Get the active planning week based on mode
+// Get the active planning week based on the week picker
 function getActivePlanningWeek() {
-    return planningMode === 'next' ? getNextISOWeek() : getISOWeek();
+    return getISOWeek(getActivePlanningDate());
 }
 
-// Switch planning mode (current or next week)
-function switchPlanningMode(mode) {
-    planningMode = mode;
-
-    // Update UI titles
-    const title = document.getElementById('planner-title');
-    const subtitle = document.getElementById('planner-subtitle');
-    const weekInfo = getActivePlanningWeek();
-
-    if (mode === 'next') {
-        title.textContent = `Planning for ${weekInfo.isoWeek} (Next Week)`;
-        subtitle.textContent = 'Select recipes for next week';
-    } else {
-        title.textContent = `Planning for ${weekInfo.isoWeek} (Current Week)`;
-        subtitle.textContent = 'Select recipes for this week';
-    }
+// Move the week picker back/forward, limited to current week .. +MAX_WEEK_OFFSET
+function shiftWeek(delta) {
+    const newOffset = Math.min(MAX_WEEK_OFFSET, Math.max(0, weekOffset + delta));
+    if (newOffset === weekOffset) return;
+    weekOffset = newOffset;
 
     // Clear current selection and load saved plan for the target week
     selectedRecipes = [];
-    loadPlanForWeek(weekInfo.isoWeek);
+    loadPlanForWeek(getActivePlanningWeek().isoWeek);
     updateRecipeSelection();
+    updateWeekPicker();
+}
+
+// Update week picker label (ISO week + Monday–Sunday range) and arrow states
+function updateWeekPicker() {
+    const weekInfo = getActivePlanningWeek(); // ISO week kept as a tooltip
+    const monday = getActivePlanningDate();
+    monday.setDate(monday.getDate() - (monday.getDay() + 6) % 7);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    const fmt = d => d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    const labels = ['This week', 'Next week'];
+
+    document.getElementById('week-name').textContent = labels[weekOffset] || `+${weekOffset} weeks`;
+    document.getElementById('week-range').textContent = `${fmt(monday)} – ${fmt(sunday)}`;
+    document.querySelector('.week-label').title = weekInfo.isoWeek;
+    document.getElementById('week-prev').disabled = weekOffset === 0;
+    document.getElementById('week-next').disabled = weekOffset === MAX_WEEK_OFFSET;
 }
 
 // Load plan for a specific week
@@ -146,16 +157,16 @@ function renderMasterRecipeList() {
 
     const ratings = typeof getRatings === 'function' ? getRatings() : [];
 
-    container.innerHTML = masterRecipes.map(recipe => {
+    container.innerHTML = getActiveRecipes().map(recipe => {
         const avg = typeof calculateAverageRating === 'function'
-            ? calculateAverageRating(ratings, recipe.name)
+            ? parseFloat(calculateAverageRating(ratings, recipe.name))
             : 0;
         const starHtml = avg > 0
             ? `<span class="recipe-star-rating">★ ${avg.toFixed(1)}</span>`
             : '';
 
         return `
-        <div class="recipe-card-selectable" data-recipe-id="${recipe.id}" onclick="toggleRecipeSelection('${recipe.id}')">
+        <div class="recipe-card-selectable" data-recipe-id="${recipe.id}" data-category="${getRecipeCategory(recipe)}" onclick="viewRecipe('${recipe.id}')" title="View Recipe">
             <div class="recipe-card-header">
                 <h4>${recipe.name}</h4>
                 <div class="recipe-card-actions">
@@ -172,25 +183,117 @@ function renderMasterRecipeList() {
                             <rect x="6" y="14" width="12" height="8"></rect>
                         </svg>
                     </button>
-                    <button class="view-icon-btn" onclick="event.stopPropagation(); viewRecipe('${recipe.id}')" title="View Recipe">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
+                    <button class="view-icon-btn select-check-btn" onclick="event.stopPropagation(); toggleRecipeSelection('${recipe.id}')" title="Add to week" aria-pressed="false">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="7.5 12.5 10.5 15.5 16.5 9"></polyline>
                         </svg>
                     </button>
                 </div>
             </div>
-            <div class="recipe-meta">
-                <span>⏱️ ${recipe.prepTime + recipe.cookTime} min</span>
-                <span>👥 ${recipe.servings} servings</span>
-            </div>
             <div class="recipe-card-footer">
-                <span class="recipe-category">${recipe.category}</span>
-                ${starHtml}
+                <span class="recipe-category">${getRecipeCategory(recipe)}</span>
+                <div class="recipe-card-stats">
+                    ${starHtml}
+                    <div class="recipe-meta">
+                        <span>⏱️ ${recipe.prepTime + recipe.cookTime} min</span>
+                        <span>👥 ${recipe.servings} servings</span>
+                    </div>
+                </div>
             </div>
         </div>
     `;
-    }).join('');
+    }).join('') + '<p class="no-data recipe-list-empty" id="recipe-list-empty" hidden>No recipes match your filter.</p>';
+
+    renderCategoryFilter();
+    applyRecipeFilters();
+    updateRecipeSelection();
+}
+
+// Archived recipes are hidden from the planner, filters and rating list
+function getActiveRecipes() {
+    return masterRecipes.filter(r => !r.archived);
+}
+
+// Recipes with no category are shown and filtered as "Other"
+function getRecipeCategory(recipe) {
+    return recipe.category || 'Other';
+}
+
+// Render category filter buttons from the categories present in the recipe data
+function renderCategoryFilter() {
+    const container = document.getElementById('category-filter');
+    if (!container) return;
+
+    const present = new Set(getActiveRecipes().map(getRecipeCategory));
+    const ordered = CONFIG.categories.filter(c => present.has(c))
+        .concat([...present].filter(c => !CONFIG.categories.includes(c)).sort());
+    // Drop selections for categories that no longer have active recipes
+    activeCategories.forEach(c => { if (!present.has(c)) activeCategories.delete(c); });
+
+    container.innerHTML = ['All', ...ordered].map(category => `
+        <button class="category-chip" data-category="${category}" onclick="toggleCategoryFilter('${category}')">${category}</button>
+    `).join('');
+    updateCategoryChips();
+}
+
+// Categories are multi-select. "All" turns the others off and can't be turned off itself;
+// turning off the last selected category turns "All" back on.
+function toggleCategoryFilter(category) {
+    if (category === 'All') {
+        activeCategories.clear();
+    } else if (activeCategories.has(category)) {
+        activeCategories.delete(category);
+    } else {
+        activeCategories.add(category);
+    }
+    updateCategoryChips();
+    applyRecipeFilters();
+}
+
+function updateCategoryChips() {
+    document.querySelectorAll('.category-chip').forEach(chip => {
+        const category = chip.dataset.category;
+        const on = category === 'All' ? activeCategories.size === 0 : activeCategories.has(category);
+        chip.classList.toggle('active', on);
+        chip.setAttribute('aria-pressed', on);
+    });
+}
+
+// Search matches recipe name and ingredient names; every word must match
+function setRecipeSearch(text) {
+    searchTerms = text.toLowerCase().split(/\s+/).filter(Boolean);
+    document.getElementById('recipe-search-clear').hidden = searchTerms.length === 0;
+    applyRecipeFilters();
+}
+
+function clearRecipeSearch() {
+    const input = document.getElementById('recipe-search');
+    input.value = '';
+    setRecipeSearch('');
+    input.focus();
+}
+
+function recipeMatchesFilters(recipe) {
+    if (activeCategories.size > 0 && !activeCategories.has(getRecipeCategory(recipe))) return false;
+    if (searchTerms.length === 0) return true;
+
+    const haystack = [recipe.name, ...(recipe.ingredients || []).map(i => i.item)]
+        .join(' ').toLowerCase();
+    return searchTerms.every(term => haystack.includes(term));
+}
+
+// Show/hide recipe cards to match the active category and search
+function applyRecipeFilters() {
+    let visible = 0;
+    document.querySelectorAll('.recipe-card-selectable').forEach(card => {
+        const recipe = masterRecipes.find(r => r.id === card.dataset.recipeId);
+        const match = recipe && recipeMatchesFilters(recipe);
+        card.hidden = !match;
+        if (match) visible++;
+    });
+    const empty = document.getElementById('recipe-list-empty');
+    if (empty) empty.hidden = visible > 0;
 }
 
 // Toggle recipe selection
@@ -215,11 +318,13 @@ function toggleRecipeSelection(recipeId) {
 function updateRecipeSelection() {
     // Update visual selection in recipe cards
     document.querySelectorAll('.recipe-card-selectable').forEach(card => {
-        const recipeId = card.dataset.recipeId;
-        if (selectedRecipes.find(r => r.id === recipeId)) {
-            card.classList.add('selected');
-        } else {
-            card.classList.remove('selected');
+        const isSelected = selectedRecipes.some(r => r.id === card.dataset.recipeId);
+        card.classList.toggle('selected', isSelected);
+
+        const checkBtn = card.querySelector('.select-check-btn');
+        if (checkBtn) {
+            checkBtn.setAttribute('aria-pressed', isSelected);
+            checkBtn.title = isSelected ? 'Remove from week' : 'Add to week';
         }
     });
 
@@ -396,9 +501,10 @@ function editRecipe(recipeId) {
     }
 
     // Category options
-    const categoryOptions = CONFIG.categories.map(cat =>
-        `<option value="${cat}" ${recipe.category === cat ? 'selected' : ''}>${cat}</option>`
-    ).join('');
+    const categoryOptions = (recipe.category ? '' : '<option value="" selected>-- Select --</option>') +
+        CONFIG.categories.map(cat =>
+            `<option value="${cat}" ${recipe.category === cat ? 'selected' : ''}>${cat}</option>`
+        ).join('');
 
     // Build ingredients list
     const ingredientsHtml = (recipe.ingredients || []).map((ing, idx) => `
@@ -430,6 +536,11 @@ function editRecipe(recipeId) {
         <div id="edit-recipe-modal" class="recipe-modal-overlay" onclick="closeEditRecipeModal(event)">
             <div class="recipe-modal-content edit-modal-content" onclick="event.stopPropagation()">
                 <div class="recipe-modal-actions">
+                    <label class="archive-switch" title="Archived recipes are hidden from the planner and rating list (applies on Save)">
+                        <input type="checkbox" id="edit-archived" ${recipe.archived ? 'checked' : ''}>
+                        <span class="archive-switch-track"><span class="archive-switch-knob"></span></span>
+                        <span>Archived</span>
+                    </label>
                     <button class="recipe-modal-icon-btn save-btn" onclick="saveRecipe('${recipe.id}')" title="Save Recipe">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
@@ -591,6 +702,7 @@ async function saveRecipe(recipeId) {
     const servings = parseInt(document.getElementById('edit-servings').value) || 4;
     const category = document.getElementById('edit-category').value;
     const notes = document.getElementById('edit-notes').value.trim();
+    const archived = document.getElementById('edit-archived').checked;
 
     // Validate required fields
     if (!name) {
@@ -633,6 +745,7 @@ async function saveRecipe(recipeId) {
         servings,
         category,
         notes,
+        archived,
         ingredients,
         instructions
     };
@@ -761,6 +874,60 @@ function printRecipe(recipeId) {
     printFrame.onload = function() {
         printFrame.contentWindow.print();
     };
+}
+
+// Archive or restore a recipe (keeps all its data; only hides it from planning)
+async function setRecipeArchived(recipeId, archived) {
+    try {
+        const response = await fetch(`/api/recipes/${recipeId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ archived })
+        });
+        if (!response.ok) throw new Error('Server returned ' + response.status);
+
+        const recipe = masterRecipes.find(r => r.id === recipeId);
+        if (recipe) recipe.archived = archived;
+        renderMasterRecipeList();
+        renderArchivedList();
+    } catch (error) {
+        console.error('Error updating archive state:', error);
+        alert('Failed to update recipe. Please try again.');
+    }
+}
+
+function openArchivedModal() {
+    renderArchivedList();
+    document.getElementById('archived-modal').style.display = 'flex';
+}
+
+function closeArchivedModal(event) {
+    if (!event || event.target === event.currentTarget) {
+        document.getElementById('archived-modal').style.display = 'none';
+    }
+}
+
+function renderArchivedList() {
+    const archived = masterRecipes.filter(r => r.archived)
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+    const countEl = document.getElementById('archived-count');
+    if (countEl) countEl.textContent = archived.length;
+
+    const container = document.getElementById('archived-list');
+    if (!container) return;
+
+    container.innerHTML = archived.length === 0
+        ? '<p class="no-data">No archived recipes.</p>'
+        : archived.map(recipe => `
+            <div class="selected-recipe-item">
+                <span class="name">${recipe.name} <span class="archived-category">${getRecipeCategory(recipe)}</span></span>
+                <div class="recipe-actions">
+                    <button class="view-btn" onclick="viewRecipe('${recipe.id}')">View</button>
+                    <button class="view-btn" onclick="setRecipeArchived('${recipe.id}', false)">Unarchive</button>
+                </div>
+            </div>
+        `).join('');
 }
 
 // Save current week plan with user feedback
@@ -1145,16 +1312,7 @@ function loadPlanToPlanner(planId, silent = false) {
 // Load current week's plan if it exists
 function loadCurrentWeekPlan() {
     const weekInfo = getISOWeek();
-
-    // Update title and subtitle with week info
-    const title = document.getElementById('planner-title');
-    const subtitle = document.getElementById('planner-subtitle');
-    if (title) {
-        title.textContent = `Planning for ${weekInfo.isoWeek} (Current Week)`;
-    }
-    if (subtitle) {
-        subtitle.textContent = 'Select recipes for this week';
-    }
+    updateWeekPicker();
 
     const currentPlan = weeklyPlans.find(p => p.isoWeek === weekInfo.isoWeek);
 
