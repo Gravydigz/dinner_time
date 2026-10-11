@@ -58,6 +58,12 @@ There is no build step, test suite, or linter configured. The frontend is plain 
 - Production images are built for `linux/amd64` (`docker build --platform linux/amd64 ...`)
 - **Before building or deploying, read `docs/DEPLOYMENT.md` and `docs/DEPLOYMENT.private.md`** (site-specific build host, registry account, production paths, deployment log). The private file is age-encrypted like the data files (listed in `.age-index`); append a row to its Deployment Log after each release
 
+## Related Repositories
+
+This repo owns the **app**: development, the Dockerfile, build and publish steps (`docs/DEPLOYMENT.md`), and versioning (`VERSION_INFO.md`, `CHANGELOG.md`). How it's **deployed and run** in the home lab lives in Travis's separate, **private** `homelab` repo (`~/claude/homelab`, `Gravydigz/homelab`): the production host, compose folder and data backups, Traefik routing and hostnames, the deployed version and rollback, and the build host itself. Infrastructure changes such as backups, the compose image-tag change and routing are done from the homelab project, not here.
+
+**This repo is public.** Its real data and site-specific details are protected: `docker/.env`, `data/*.json` and `docs/DEPLOYMENT.private.md` are gitignored and committed only age-encrypted (see `.age-index`). Keep it that way. Don't copy homelab-internal details (host names, IPs, accounts, file paths) into public files. Put anything site-specific that this repo needs in `docs/DEPLOYMENT.private.md`.
+
 ## Recipe Format
 
 ```json
