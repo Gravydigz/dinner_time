@@ -10,6 +10,7 @@ Version format: `YYMM.VV.P` — YearMonth.Version.Patch
 
 ### Changed
 - **Secrets hooks moved to the central secrets-process repo**: `.githooks/` now holds wrapper shims that run the hooks in `~/.secrets-process` (github.com/Gravydigz/secrets-process). The pre-commit shim blocks commits when that clone is missing. `secrets-process.md` says where it lives and how to update it
+- **`secrets-process.md` refreshed for secrets-process 2610.01.0**: covers vendored hooks (`.githooks/VERSION`) and running `git checkout` to decrypt after setting `core.hooksPath`
 
 ### Added
 - **Private deployment notes**: `docs/DEPLOYMENT.private.md` (age-encrypted, listed in `.age-index`) records the site-specific build and deploy process and a deployment log; `docs/DEPLOYMENT.private.example.md` is a public template for anyone without the key. `docs/DEPLOYMENT.md`, README and `CLAUDE.md` point to it
